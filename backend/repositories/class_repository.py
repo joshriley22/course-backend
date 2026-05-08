@@ -23,14 +23,7 @@ class ClassRepository:
         MATCH (:Professor {name:$professor_name})-[:PROFESSOR_OF]->(c:Class)
         WITH c
         MATCH (c)-[:SESSION_OF]->(course:Course)
-        RETURN  
-        c.start_time AS start, 
-        c.end_time AS end, 
-        c.days AS days, 
-        c.enrollment_available AS enrollment_available, 
-        c.is_lab AS is_lab, 
-        c.course_code AS course_code, 
-        c.course_number AS course_number 
+        RETURN c
         """
 
         result = session.run(query, professor_name=professor_name)
@@ -39,14 +32,7 @@ class ClassRepository:
     def get_classes_by_course(self, session, course_code, course_number):
         query = """
         MATCH(c:Class)-[:SESSION_OF]->(course:Course {code:$course_code, number:$course_number})
-        RETURN 
-        c.start_time AS start, 
-        c.end_time AS end, 
-        c.days AS days, 
-        c.enrollment_available AS enrollment_available, 
-        c.is_lab AS is_lab, 
-        c.course_code AS course_code, 
-        c.course_number AS course_number
+        RETURN c
         """
 
         result = session.run(query, course_code=course_code, course_number=course_number)

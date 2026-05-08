@@ -41,11 +41,18 @@ class CourseRepository:
     def get_course(self, session, code, number):
         query = """
         MATCH(c:Course {code:$code, number:$number})
-        RETURN c.code AS code, c.number AS number, c.name AS name
+        RETURN c
         """
 
         result = session.run(query, code=code, number=number)
         return result.single()
+
+    def get_tree_by_code(self, session, course_code):
+        query = """
+        MATCH(c:Course {code: $code})
+        WITH c
+        OPTIONAL MATCH 
+        """
 
     def get_prerequisites(self, session, code, number):
         return self.get_prerequisites_unformatted(session, code, number, [])
@@ -55,7 +62,7 @@ class CourseRepository:
         query = """
                 MATCH(c:Course {code:$code, number:$number})
                 MATCH (c)-[:PREREQUISITE]->(prereq:Course) 
-                RETURN prereq.code AS code, prereq.number AS number, c.name AS for_course
+                RETURN c.name AS for_course, prereq
                 """
         prereqs = session.run(query, code=code, number=number)
         for prereq in prereqs:
@@ -81,7 +88,7 @@ class CourseRepository:
 
         query = """
         MATCH (c:Course)
-        RETURN c.code AS code, c.number AS number, c.name AS name
+        RETURN c
         """
 
         result = session.run(query)
@@ -90,8 +97,8 @@ class CourseRepository:
 
     def get_children(self, session, course_code, course_number):
         query = """
-        MATCH (c:Course) -[:PREREQUISITE]-> (earlier:Course {code:$course_code, number:$course_number})
-        RETURN earlier.code AS code, earlier.number AS number
+        MATCH (c:Course) -[:PREREQUISITE]-> (next_class:Course {code:$course_code, number:$course_number})
+        RETURN next_class
         """
 
         result = session.run(query, course_code=course_code, course_number=course_number)

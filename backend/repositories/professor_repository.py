@@ -24,7 +24,7 @@ class ProfessorRepository:
 
         query = """
         MATCH (p:Professor)
-        RETURN p.name AS name, p.rating AS rating
+        RETURN p
         """
 
         result = session.run(query)
