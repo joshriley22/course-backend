@@ -36,17 +36,21 @@ def get_prerequisites(course_code, course_number):
 
     return prereqs
 
-@router.get("/courses/{course_code}/{course_number}/co-prerequisites")
-def get_co_prereqs(course_code, course_number, parent_code, parent_number):
+@router.get("/courses/{course_code}/{course_number}/tree")
+def get_courses_by_code(course_code):
+    with db.get_session() as session:
+        courses = service.get_courses_by_code(session, course_code)
 
-    if not course_exists(course_code, course_number):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= course_code+ course_number+" not found!")
+    return courses
+
+@router.get("/courses/{course_code}/{course_number}/co-prerequisites")
+def get_co_prereqs(parent_code, parent_number):
 
     if not course_exists(parent_code, parent_number):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= parent_code+ parent_number+" not found!")
 
     with db.get_session() as session:
-        co_prereqs = service.get_co_prereqs(session, course_code, course_number, parent_code, parent_number)
+        co_prereqs = service.get_co_prereqs(session, parent_code, parent_number)
 
     return co_prereqs
 

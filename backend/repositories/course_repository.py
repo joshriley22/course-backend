@@ -47,12 +47,14 @@ class CourseRepository:
         result = session.run(query, code=code, number=number)
         return result.single()
 
-    def get_tree_by_code(self, session, course_code):
+    def get_courses_by_code(self, session, course_code):
         query = """
-        MATCH(c:Course {code: $code})
-        WITH c
-        OPTIONAL MATCH 
+        MATCH (c:Course {code:$course_code})
+        RETURN c.code AS code, c.number AS number
         """
+
+        courses = session.run(query, course_code=course_code)
+        return [result.data() for result in courses]
 
     def get_prerequisites(self, session, code, number):
         return self.get_prerequisites_unformatted(session, code, number, [])
@@ -66,21 +68,24 @@ class CourseRepository:
                 """
         prereqs = session.run(query, code=code, number=number)
         for prereq in prereqs:
-            prereq_singular_group = self.get_co_prereqs(session, prereq["code"], prereq["number"], prereq["for_course"])
-            if len(prereq_singular_group) != 0:
-                prereq_groups.append(prereq_singular_group)
-            prereq_groups.append(self.get_prerequisites_unformatted(session, prereq["code"], prereq["number"], []))
-        return prereq_groups
+             prereq_singular_group = self.get_co_prereqs(session, code, number)
+             if len(prereq_singular_group) != 0:
+                 prereq_groups.append(prereq_singular_group)
+             prereq_groups.append(self.get_prerequisites_unformatted(session, prereq["code"], prereq["number"], []))
+        return prereqs
 
-    def get_co_prereqs(self, session, code, number, parent_code, parent_number):
+
+    #Takes a course and returns its prerequisites and their relationships to each other
+    def get_co_prereqs(self, session, course_code, course_number):
         query = """
-                MATCH(c:Course {code:$code, number:$number})
-                WITH c
-                OPTIONAL MATCH path = (c)-[rel:PREREQUISITE_RELATIONSHIP*1.. {for_course_code:$for_course_code, for_course_number:$for_course_number}]->(prereq:Course)
-                RETURN c.code AS source_code, c.number AS source_number, prereq.code AS target_code, prereq.number AS target_number, [r in relationships(path) | r.relationship] AS relationships
-                ORDER BY length(path)
+                MATCH(c:Course {code:$code, number:$number})-[:PREREQUISITE]->(c1:Course)
+                MATCH path = (c1)-[rel:PREREQUISITE_RELATIONSHIP*1..5 {for_course_code:$code, for_course_number:$number}]->(prereq:Course)
+                WITH relationships(path) AS rels
+                UNWIND rels AS rel
+                WITH startNode(rel) AS start, endNode(rel) AS end, rel
+                RETURN start.code AS source_code, start.number AS source_number, end.code AS target_code, end.number AS target_number, rel{.*} AS relationship
                 """
-        co_prereq = session.run(query, code=code, number=number, for_course_code=parent_code, for_course_number=parent_number)
+        co_prereq = session.run(query, code=course_code, number=course_number)
         return [result.data() for result in co_prereq]
 
 
@@ -97,8 +102,8 @@ class CourseRepository:
 
     def get_children(self, session, course_code, course_number):
         query = """
-        MATCH (c:Course) -[:PREREQUISITE]-> (next_class:Course {code:$course_code, number:$course_number})
-        RETURN next_class
+        MATCH (c:Course {code:$course_code, number:$course_number}) -[:PREREQUISITE]-> (next_class:Course)
+        RETURN DISTINCT next_class.code AS code, next_class.number AS number
         """
 
         result = session.run(query, course_code=course_code, course_number=course_number)

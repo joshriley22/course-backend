@@ -4,7 +4,7 @@ from neo4j import GraphDatabase
 from dotenv import load_dotenv
 import os
 
-load_dotenv(Path(__file__).parent / ".env")
+load_dotenv(".env")
 
 class Neo4jDB:
     def __init__(self):

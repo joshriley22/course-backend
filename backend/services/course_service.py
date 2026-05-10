@@ -26,9 +26,13 @@ class CourseService:
 
         return self.repo.get_prerequisites(session, code, number)
 
-    def get_co_prereqs(self, session, code, number, parent_code, parent_number):
+    def get_co_prereqs(self, session, parent_code, parent_number):
 
-        return self.repo.get_co_prereqs(session, code, number, parent_code, parent_number)
+        return self.repo.get_co_prereqs(session, parent_code, parent_number)
+
+    def get_courses_by_code(self, session, course_code):
+
+        return self.repo.get_courses_by_code(session, course_code)
 
     def get_courses(self, session):
 
