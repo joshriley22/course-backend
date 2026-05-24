@@ -1,17 +1,51 @@
 from fastapi import APIRouter, status, HTTPException
 from backend.db import db
+import backend.logic.course_logic as logic
+from backend.responses.course import Course
 from backend.services.course_service import CourseService
 from backend.schemas.course_schema import CourseCreate
 
 router = APIRouter()
 
 service = CourseService()
+#
+# @router.get("/courses/next-courses")
+def get_next_courses(course_list):
+    for course in course_list:
+        if not course_exists(course["code"], course["number"]):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=course.get_code() + course.get_number() + "not found!")
+
+    with db.get_session() as session:
+        next_courses = logic.get_next_courses(session, course_list)
+
+    return next_courses
 
 @router.post("/courses", status_code=status.HTTP_201_CREATED,)
 def create_course(course: CourseCreate):
 
     with db.get_session() as session:
         service.create_course(session, course)
+
+@router.get("/courses/subject-tree/{course_code}")
+def get_course_tree(course_code: str):
+
+    with db.get_session() as session:
+        return logic.get_course_tree(session, course_code)
+
+
+@router.get("/courses/codes")
+def get_codes():
+
+    with db.get_session() as session:
+        return service.get_codes(session)
+
+
+@router.get("/courses/{course_code}/edges")
+def get_course_edges(course_code: str):
+
+    with db.get_session() as session:
+        return service.get_course_edges(session, course_code)
 
 
 @router.get("/courses/{course_code}/{course_number}")
@@ -25,25 +59,14 @@ def get_course(course_code, course_number):
 
     return course
 
-@router.get("/courses/{course_code}/{course_number}/prerequisites")
-def get_prerequisites(course_code, course_number):
-
-    if not course_exists(course_code, course_number):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found!")
-
-    with db.get_session() as session:
-        prereqs = service.get_prerequisites(session, course_code, course_number)
-
-    return prereqs
-
-@router.get("/courses/{course_code}/{course_number}/tree")
+@router.get("/courses/{course_code}")
 def get_courses_by_code(course_code):
     with db.get_session() as session:
         courses = service.get_courses_by_code(session, course_code)
 
     return courses
 
-@router.get("/courses/{course_code}/{course_number}/co-prerequisites")
+@router.get("/courses/{course_code}/{course_number}/co-prereqs")
 def get_co_prereqs(parent_code, parent_number):
 
     if not course_exists(parent_code, parent_number):
@@ -62,7 +85,7 @@ def get_courses():
 
     return courses
 
-@router.post("/courses/{course_code}/{course_number}/prerequisites", status_code=status.HTTP_201_CREATED)
+@router.post("/courses/{prereq_code}/{prereq_number}/prerequisites/{course_code}/{course_number}", status_code=status.HTTP_201_CREATED)
 def create_prereq_edge(course_code: str, course_number: str, prereq_code: str, prereq_number: str):
 
     if not course_exists(course_code, course_number):
@@ -102,8 +125,53 @@ def get_children(course_code: str, course_number: str):
 
     return children
 
+@router.get("/courses/{course_code}/{course_number}/parents")
+def get_parents(course_code: str, course_number: str):
+
+    if not course_exists(course_code, course_number):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=course_code + course_number + "not found!")
+
+    with db.get_session() as session:
+        parents = service.get_parents(session, course_code, course_number)
+
+    return parents
+
+@router.get("/courses/{course_code}/{course_number}/prerequisites")
+def get_prerequisites(course_code: str, course_number: str):
+    if not course_exists(course_code, course_number):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=course_code + course_number + "not found!")
+
+    with db.get_session() as session:
+        prereqs = logic.get_requirements(session, course_code, course_number)
+
+    return prereqs
+
+def get_co_prereqs_for_course(course_code: str, course_number: str, prereq_code: str, prereq_number: str):
+
+    if not course_exists(course_code, course_number):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=course_code + course_number + "not found!")
+
+    if not course_exists(prereq_code, prereq_number):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=prereq_code + prereq_number + "not found!")
+
+    with db.get_session() as session:
+        co_prereqs = service.get_co_prereqs_for_course(session, prereq_code, prereq_number, course_code, course_number)
+
+    return co_prereqs
+
+def get_starter_courses():
+
+    with db.get_session() as session:
+        return service.get_starter_courses(session)
+
 def course_exists(course_code: str, course_number: str):
 
     with db.get_session() as session:
         return service.course_exists(session, course_code, course_number)
+
+
+def get_requirements(course_code: str, course_number: str):
+
+    with db.get_session() as session:
+        return logic.get_requirements(session, course_code, course_number)
 

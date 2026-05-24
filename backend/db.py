@@ -10,7 +10,7 @@ class Neo4jDB:
     def __init__(self):
         self.driver = GraphDatabase.driver(
             os.getenv("NEO4J_URI"),
-            auth=(os.getenv("NEO4J_USER"), os.getenv("NEO4J_PASSWORD"))
+            auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD"))
         )
 
     def get_session(self):

@@ -1,5 +1,4 @@
 
-
 class CourseRepository:
 
 
@@ -7,36 +6,42 @@ class CourseRepository:
 
         query = """
         
-        CREATE (c:Course {code:$code, number:$number, name:$name, difficulty:$difficulty, credits:$units, is_integration:$is_integration, elective_status:$elective_status})
+        MERGE (c:Course {code:$code, number:$number, name:$name, difficulty:$difficulty, credits:$units, is_integration:$is_integration, elective_status:$elective_status})
         RETURN c
         """
 
         result = session.run(query, code=code, number=number, name=name, difficulty=difficulty, units=units, is_integration=is_integration, elective_status=elective_status)
 
-        return result.single()
+        response = result.single()
+
+        return response
 
     def create_prereq_edge(self, session, course_code, course_number, prereq_code, prereq_number):
 
         query = """
         MATCH (c:Course {code:$course_code, number:$course_number})
         MATCH (prereq:Course {code:$prereq_code, number:$prereq_number})
-        MERGE (c)-[rel:PREREQUISITE]->(prereq)
-        RETURN rel
+        MERGE (prereq)-[rel:PREREQUISITE]->(c)
+        RETURN prereq.code AS source_code, prereq.number AS source_number, c.code AS target_code, c.number AS target_number
         """
         result = session.run(query, course_code=course_code, course_number=course_number, prereq_code=prereq_code, prereq_number=prereq_number)
 
-        return result.single()
+        response = [result.data() for result in result]
+
+        return response
 
     def create_prereq_rel_edge(self, session, course_code, course_number, prereq1_code, prereq1_number, prereq2_code, prereq2_number, rel):
         query= """
         MATCH (prereq1:Course {code:$prereq1_code, number:$prereq1_number})
         MATCH (prereq2:Course {code:$prereq2_code, number:$prereq2_number})
         MERGE (prereq1)-[rel:PREREQUISITE_RELATIONSHIP{relationship:$relationship, for_course_code:$parent_code, for_course_number:$parent_number}]->(prereq2)
+        RETURN prereq1.code AS source_code, prereq1.number AS source_number, prereq2.code AS target_code, prereq2.number AS target_number, rel.relationship AS relationship
         """
         result = session.run(query, prereq1_code=prereq1_code, prereq1_number=prereq1_number, prereq2_code=prereq2_code, prereq2_number=prereq2_number, relationship=rel, parent_code=course_code, parent_number=course_number)
 
-        return result.single()
+        response = [result.data() for result in result]
 
+        return response
 
     def get_course(self, session, code, number):
         query = """
@@ -45,7 +50,24 @@ class CourseRepository:
         """
 
         result = session.run(query, code=code, number=number)
-        return result.single()
+
+        response = result.single()
+
+        return response
+
+
+    def get_co_prereqs_for_course(self, session, prereq_code, prereq_number, course_code, course_number):
+        query = """
+        MATCH (c:Course {code:$course_code, number:$course_number})-[p:PREREQUISITE_RELATIONSHIP {for_course_code:$for_course_code, for_course_number:$for_course_number}]->(c1:Course)
+        RETURN c.code AS source_code, c.number AS source_number, c1.code AS target_code, c1.number AS target_number, p.relationship AS relationship
+        """
+
+        result = session.run(query, course_code=prereq_code, course_number=prereq_number, for_course_code=course_code, for_course_number=course_number)
+
+        response = [result.data() for result in result]
+
+        return response
+
 
     def get_courses_by_code(self, session, course_code):
         query = """
@@ -54,40 +76,10 @@ class CourseRepository:
         """
 
         courses = session.run(query, course_code=course_code)
-        return [result.data() for result in courses]
 
-    def get_prerequisites(self, session, code, number):
-        return self.get_prerequisites_unformatted(session, code, number, [])
+        response = [result.data() for result in courses]
 
-    def get_prerequisites_unformatted(self, session, code, number, prereq_groups):
-
-        query = """
-                MATCH(c:Course {code:$code, number:$number})
-                MATCH (c)-[:PREREQUISITE]->(prereq:Course) 
-                RETURN c.name AS for_course, prereq
-                """
-        prereqs = session.run(query, code=code, number=number)
-        for prereq in prereqs:
-             prereq_singular_group = self.get_co_prereqs(session, code, number)
-             if len(prereq_singular_group) != 0:
-                 prereq_groups.append(prereq_singular_group)
-             prereq_groups.append(self.get_prerequisites_unformatted(session, prereq["code"], prereq["number"], []))
-        return prereqs
-
-
-    #Takes a course and returns its prerequisites and their relationships to each other
-    def get_co_prereqs(self, session, course_code, course_number):
-        query = """
-                MATCH(c:Course {code:$code, number:$number})-[:PREREQUISITE]->(c1:Course)
-                MATCH path = (c1)-[rel:PREREQUISITE_RELATIONSHIP*1..5 {for_course_code:$code, for_course_number:$number}]->(prereq:Course)
-                WITH relationships(path) AS rels
-                UNWIND rels AS rel
-                WITH startNode(rel) AS start, endNode(rel) AS end, rel
-                RETURN start.code AS source_code, start.number AS source_number, end.code AS target_code, end.number AS target_number, rel{.*} AS relationship
-                """
-        co_prereq = session.run(query, code=course_code, number=course_number)
-        return [result.data() for result in co_prereq]
-
+        return response
 
     def get_courses(self, session):
 
@@ -98,7 +90,40 @@ class CourseRepository:
 
         result = session.run(query)
 
-        return [record.data() for record in result]
+        response = [record.data() for record in result]
+
+        return response
+
+    def get_starter_courses(self, session):
+
+        query = """
+        MATCH(c:Course)
+        WITH c AS c, toInteger(c.number) AS course_number
+        WHERE course_number < 4900 AND NOT ()-[:PREREQUISITE]->(c)
+        RETURN c.code AS code, c.number AS number
+        """
+
+        result = session.run(query)
+
+        response = [record.data() for record in result]
+
+        return response
+
+    def get_starter_course_by_code(self, session, code):
+
+        query = """
+           MATCH(c:Course {code:$code})
+           WITH c AS c, toInteger(c.number) AS course_number
+           WHERE course_number < 4900 AND NOT ()-[:PREREQUISITE]->(c)
+           RETURN c.code AS code, c.number AS number
+           """
+
+        result = session.run(query, code=code)
+
+        response = [record.data() for record in result]
+
+        return response
+
 
     def get_children(self, session, course_code, course_number):
         query = """
@@ -108,8 +133,21 @@ class CourseRepository:
 
         result = session.run(query, course_code=course_code, course_number=course_number)
 
-        return [record.data() for record in result]
+        response = [record.data() for record in result]
 
+        return response
+
+    def get_parents(self, session, course_code, course_number):
+        query = """
+        MATCH (parent:Course)-[:PREREQUISITE]->(c:Course {code:$course_code, number:$course_number})
+        RETURN parent.code AS code, parent.number AS number
+        """
+
+        result = session.run(query, course_code=course_code, course_number=course_number)
+
+        response = [record.data() for record in result]
+
+        return response
 
     def course_exists(self, session, course_code, course_number):
         query = """
@@ -119,3 +157,39 @@ class CourseRepository:
 
         result = session.run(query, course_code=course_code, course_number=course_number)
         return result.single()["EXISTS"]
+
+    def get_course_edges(self, session, course_code):
+        query = """
+            MATCH path = (start:Course {code:$start_code, number:$start_number})-[:PREREQUISITE*0..]->(c:Course {code:$start_code})
+            WHERE EXISTS { MATCH (c1:Course)-[:PREREQUISITE*0..1]->(c) }
+            MATCH (c1:Course)-[:PREREQUISITE*0..1]->(c) 
+            WHERE c1.number <> c.number
+            WITH c, c1, min(length(path)) AS depth
+            RETURN c1.code AS source_code, c1.number AS source_number, c1.elective_status AS source_status, c.code AS target_code, c.number AS target_number, c.elective_status AS target_status, depth
+            ORDER BY depth
+            """
+        result = session.run(query, course_code=course_code, start_code='CS', start_number='1110')
+        return [record.data() for record in result]
+
+
+    def get_sink_nodes(self, session, course_code):
+        query = """
+        MATCH (n:Course {code:$course_code})})
+        WHERE NOT (n)-[:PREREQUISITE]->(c:Course {code:$course_code})
+        RETURN n"""
+
+        result = session.run(query, course_code=course_code)
+        return [record.data() for record in result]
+
+    def get_codes(self, session):
+        query = """
+        MATCH (c:Course)
+        RETURN DISTINCT c.code AS code
+        """
+
+        result = session.run(query)
+
+        return [record.data() for record in result]
+
+
+

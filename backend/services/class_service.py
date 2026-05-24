@@ -6,7 +6,6 @@ class ClassService:
         self.repo = ClassRepository()
 
     def create_class(self, session, class_instance):
-
         return self.repo.create_class(
             session,
             class_instance.class_id,
@@ -17,7 +16,8 @@ class ClassService:
             class_instance.is_lab,
             class_instance.course_code,
             class_instance.course_number,
-            class_instance.professor_name,
+            class_instance.elective_status,  # ← swap these two
+            class_instance.professor_name,  # ← swap these two
         )
 
     def get_classes_by_professor(self, session, professor_name):

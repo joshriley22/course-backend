@@ -10,5 +10,6 @@ class ClassSessionCreate(BaseModel):
     course_code: str
     course_number: str
     professor_name: str
+    elective_status: int
 
 

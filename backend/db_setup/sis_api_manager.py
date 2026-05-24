@@ -49,7 +49,7 @@ def initialize_classes(url):
                     if class_["section_type"] == "Laboratory":
                         is_lab = True
                     for meeting in meetings:
-                        class_session = ClassSessionCreate(class_id=class_["class_nbr"], start_time=str(meeting["start_time"]), end_time=str(meeting["end_time"]), days=meeting["days"], enrollment_available=int(class_["enrollment_available"]), is_lab=is_lab, course_code=class_["subject"], course_number=class_["catalog_nbr"], professor_name=meeting["instructor"])
+                        class_session = ClassSessionCreate(class_id=class_["class_nbr"], start_time=str(meeting["start_time"]), end_time=str(meeting["end_time"]), days=meeting["days"], enrollment_available=int(class_["enrollment_available"]), is_lab=is_lab, course_code=class_["subject"], course_number=class_["catalog_nbr"], professor_name=meeting["instructor"], elective_status=0)
                         class_router.create_class(class_session)
 
 

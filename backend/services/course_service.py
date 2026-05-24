@@ -22,13 +22,13 @@ class CourseService:
 
         return self.repo.get_course(session, code, number)
 
-    def get_prerequisites(self, session, code, number):
-
-        return self.repo.get_prerequisites(session, code, number)
-
-    def get_co_prereqs(self, session, parent_code, parent_number):
-
-        return self.repo.get_co_prereqs(session, parent_code, parent_number)
+    # def get_prerequisites(self, session, code, number):
+    #
+    #     return self.repo.get_prerequisites(session, code, number)
+    #
+    # def get_co_prereqs(self, session, parent_code, parent_number):
+    #
+    #     return self.repo.get_co_prereqs(session, parent_code, parent_number)
 
     def get_courses_by_code(self, session, course_code):
 
@@ -50,6 +50,31 @@ class CourseService:
 
         return self.repo.get_children(session, course_code, course_number)
 
+    def get_parents(self, session, course_code, course_number):
+
+        return self.repo.get_parents(session, course_code, course_number)
+
+    def get_co_prereqs_for_course(self, session, prereq_code, prereq_number, course_code, course_number):
+
+        return self.repo.get_co_prereqs_for_course(session, prereq_code, prereq_number, course_code, course_number)
+
     def course_exists(self, session, course_code, course_number):
 
         return self.repo.course_exists(session, course_code, course_number)
+
+    def get_starter_courses(self, session):
+
+        return self.repo.get_starter_courses(session)
+
+    def get_starter_courses_by_code(self, session, code):
+
+        return self.repo.get_starter_course_by_code(session, code)
+
+    def get_course_edges(self, session, code):
+
+        return self.repo.get_course_edges(session, code)
+
+    def get_codes(self, session):
+
+        return self.repo.get_codes(session)
+

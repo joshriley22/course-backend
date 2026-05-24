@@ -1,6 +1,7 @@
 
 import requests
 from bs4 import BeautifulSoup
+from fastapi import HTTPException
 
 from backend.routers import course_router
 from backend.routers.course_router import create_prereq_rel_edge, create_prereq_edge
@@ -21,10 +22,17 @@ def create_relationship_from_catalog(url):
                 for i in range(len(prereq_list)):
                     prereq_code = prereq_list[i].split()[0]
                     prereq_number = prereq_list[i].split()[1]
-                    create_prereq_edge(course_code, course_number, prereq_code, prereq_number)
+                    try:
+                        create_prereq_edge(course_code, course_number, prereq_code, prereq_number)
+                    except HTTPException:
+                        print("Error creating relationship for " + course_code + course_number + " and " + prereq_code + prereq_number)
                     if i < len(prereq_list) - 1 and rel:
-                        create_prereq_rel_edge(course_code, course_number, prereq_list[i], prereq_list[i+1], rel.pop(0))
-
+                        prereq2_code = prereq_list[i+1].split()[0]
+                        prereq2_number = prereq_list[i+1].split()[1]
+                        try:
+                            create_prereq_rel_edge(course_code, course_number, prereq_code, prereq_number, prereq2_code, prereq2_number, rel.pop(0))
+                        except HTTPException:
+                            print("Error creating relationship for " + course_code + course_number + " and " + prereq_code + prereq_number)
 
 
 def get_courses_from_catalog(url):
