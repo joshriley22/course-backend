@@ -1,11 +1,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import './App.css';
 
-import { fetchCodes } from './api/courses';
+import { fetchCodes, fetchCourseEdges } from './api/courses';
 import { Header } from './components/Header';
-import { CourseTree } from './components/CourseTree';
+import { setCourseRanks } from './utils/TreeSetup';
 
 function App() {
+  console.log("TEST");
+  setCourseRanks(fetchCourseEdges('CS'));
+
+
   const [codes, setCodes] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -34,23 +38,6 @@ function App() {
         onPrev={handlePrev}
         onNext={handleNext}
       />
-      <div className="tree-wrapper">
-        {currentCode ? (
-          <CourseTree deptCode={currentCode} />
-        ) : (
-          <div
-            style={{
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#64748b',
-            }}
-          >
-            Connecting to backend…
-          </div>
-        )}
-      </div>
     </div>
   );
 }

@@ -160,23 +160,31 @@ class CourseRepository:
 
     def get_course_edges(self, session, course_code):
         query = """
-            MATCH path = (start:Course {code:$start_code, number:$start_number})-[:PREREQUISITE*0..]->(c:Course {code:$start_code})
-            WHERE EXISTS { MATCH (c1:Course)-[:PREREQUISITE*0..1]->(c) }
-            MATCH (c1:Course)-[:PREREQUISITE*0..1]->(c) 
+            MATCH (start:Course {code:$course_code})
+            WHERE NOT ()-[:PREREQUISITE]->(start) AND (start)-[:PREREQUISITE]->({code:$course_code})
+            WITH start
+            MATCH path = (start)-[:PREREQUISITE*0..]->(c:Course {code:$course_code})
+            WHERE EXISTS { MATCH (c1:Course)-[:PREREQUISITE]->(c) }
+            MATCH (c1:Course)-[:PREREQUISITE]->(c) 
             WHERE c1.number <> c.number
-            WITH c, c1, min(length(path)) AS depth
+            WITH c, c1, start, path
+            OPTIONAL MATCH source_path = (start)-[:PREREQUISITE*0..7]->(c1)
+            WITH c, c1, min(length(source_path)) + 1 AS source_depth, min(length(path)) AS target_depth
+            WITH c, c1, [source_depth, target_depth] AS depths
+            UNWIND depths AS d
+            WITH c, c1, max(d) AS depth
             RETURN c1.code AS source_code, c1.number AS source_number, c1.elective_status AS source_status, c.code AS target_code, c.number AS target_number, c.elective_status AS target_status, depth
-            ORDER BY depth
+            ORDER BY depth DESC, toInteger(c1.number) DESC
             """
-        result = session.run(query, course_code=course_code, start_code='CS', start_number='1110')
+        result = session.run(query, course_code=course_code)
         return [record.data() for record in result]
 
 
     def get_sink_nodes(self, session, course_code):
         query = """
-        MATCH (n:Course {code:$course_code})})
-        WHERE NOT (n)-[:PREREQUISITE]->(c:Course {code:$course_code})
-        RETURN n"""
+        MATCH (n:Course {code:$course_code})
+        WHERE NOT (n)-[:PREREQUISITE]->(:Course {code:$course_code})
+        RETURN n.code AS code, n.number AS number, n.elective_status AS elective_status"""
 
         result = session.run(query, course_code=course_code)
         return [record.data() for record in result]

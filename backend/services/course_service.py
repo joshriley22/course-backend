@@ -72,7 +72,13 @@ class CourseService:
 
     def get_course_edges(self, session, code):
 
-        return self.repo.get_course_edges(session, code)
+        edges = self.repo.get_course_edges(session, code)
+        sinks = self.repo.get_sink_nodes(session, code)
+
+        for sink in sinks:
+            edges.append({"source_code": sink["code"], "source_number": sink["number"], "source_status": sink["elective_status"], "target_code": None, "target_number": None, "target_status": None, "depth": 1})
+
+        return edges
 
     def get_codes(self, session):
 
