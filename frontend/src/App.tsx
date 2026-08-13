@@ -1,43 +1,51 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import './App.css';
 
 import { fetchCodes, fetchCourseEdges } from './api/courses';
 import { Header } from './components/Header';
-import { setCourseRanks } from './utils/TreeSetup';
+import { CourseNode } from './components/CourseNode';
+import type { CourseNodeData } from './components/CourseNode';
+import { getNodeProps } from './utils/NodeInitializer';
+import { ReactFlow } from '@xyflow/react';
+
 
 function App() {
-  console.log("TEST");
-  setCourseRanks(fetchCourseEdges('CS'));
-
-
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
   const [codes, setCodes] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const nodeTypes = { courseNode : CourseNode };
 
   useEffect(() => {
     fetchCodes()
-      .then((c) => setCodes(c))
+      .then((codes) => setCodes(codes))
       .catch(console.error);
   }, []);
 
-  const handlePrev = useCallback(
-    () => setCurrentIndex((i) => Math.max(0, i - 1)),
-    [],
-  );
-  const handleNext = useCallback(
-    () => setCurrentIndex((i) => Math.min(codes.length - 1, i + 1)),
-    [codes.length],
-  );
+  const graphRef = useRef<HTMLDivElement>(null);
 
-  const currentCode = codes[currentIndex] ?? '';
+  useEffect(() => {
+    if (codes.length === 0) return;
+    const graph = graphRef.current;
+    if (!graph) return;
+    const graphWidth = graph.offsetWidth;
+    const graphHeight = graph.offsetHeight;
+    fetchCourseEdges(codes[currentIndex])
+      .then((edges) => getNodeProps(edges, graphWidth, graphHeight))
+      .then((props) => setNodes(props))
+      .catch(console.error);
+  }, [codes, currentIndex]);
+
+  const handlePrev = useCallback(() => setCurrentIndex((i) => Math.max(0, i - 1)), []);
+  const handleNext = useCallback(() => setCurrentIndex((i) => Math.min(codes.length - 1, i + 1)), [codes.length]);
+
 
   return (
-    <div className="app">
-      <Header
-        codes={codes}
-        currentIndex={currentIndex}
-        onPrev={handlePrev}
-        onNext={handleNext}
-      />
+    <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100vw', height: '100vh', gap: '2rem', alignItems: 'center' }}>
+      <Header codes={codes} currentIndex={currentIndex} onPrev={handlePrev} onNext={handleNext} />
+        <div id='graph-container' ref={graphRef} style={{ position: 'relative', flex: '1', width: '90vw', height: '90vh' }}>
+        <ReactFlow nodes={nodes} nodeTypes={nodeTypes}/>
+        </div>
     </div>
   );
 }

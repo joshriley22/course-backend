@@ -10,19 +10,16 @@ export interface CourseEdgeData {
     depth: number
 }
 
-export function getSourceNode(edge: CourseEdgeData) : CourseNodeData {
-    return {
-        code: edge.source_code,
-        number: edge.source_number,
-        elective_status: edge.source_status
-        }
-    }
+export function getSourceNode(edge: CourseEdgeData) : CourseNodeData | null {
+    if(edge.source_code !== null) {
+        return new CourseNodeData(edge.source_code, edge.source_number, edge.depth-1);
+       }
+    return null;
+}
 
-
-export function getTargetNode(edge: CourseEdgeData) : CourseNodeData {
-    return {
-        code: edge.target_code,
-        number: edge.target_number,
-        elective_status: edge.target_status
+export function getTargetNode(edge: CourseEdgeData) : CourseNodeData | null {
+    if(edge.target_code !== null) {
+        return new CourseNodeData(edge.target_code, edge.target_number, edge.depth);
         }
-    }
+    return null;
+}

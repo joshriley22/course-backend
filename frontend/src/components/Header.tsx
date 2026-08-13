@@ -12,6 +12,7 @@ export function Header({ codes, currentIndex, onPrev, onNext }: HeaderProps) {
     <header
       style={{
         height: 60,
+        width: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
