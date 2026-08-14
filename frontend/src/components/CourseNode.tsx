@@ -33,8 +33,8 @@ export class CourseNodeData {
         return this.depth;
        }
 
-   getProps(x : Number, y : Number ): CourseNodeProps {
-       return {id : this.string(), type : "courseNode", position : {x : `${x}`, y : `${y}`}, data : {code : this.getCode(), number : this.getNumber().toString() }}
+   getProps(x : number, y : number ): CourseNodeProps {
+       return {id : this.string(), type : "courseNode", position : {x, y}, data : {code : this.getCode(), number : this.getNumber().toString() }}
        }
 
 }
