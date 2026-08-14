@@ -1,17 +1,19 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import '@xyflow/react/dist/style.css';
 import './App.css';
 
 import { fetchCodes, fetchCourseEdges } from './api/courses';
 import { Header } from './components/Header';
 import { CourseNode } from './components/CourseNode';
-import type { CourseNodeData } from './components/CourseNode';
 import { getNodeProps } from './utils/NodeInitializer';
+import { getEdgeProps } from './utils/EdgeInitializer';
 import { ReactFlow } from '@xyflow/react';
+import dagre from '@dagrejs/dagre';
 
 
 function App() {
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
+  const [nodeProps, setNodeProps] = useState([]);
+  const [edgeProps, setEdgeProps] = useState([]);
   const [codes, setCodes] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const nodeTypes = { courseNode : CourseNode };
@@ -31,8 +33,10 @@ function App() {
     const graphWidth = graph.offsetWidth;
     const graphHeight = graph.offsetHeight;
     fetchCourseEdges(codes[currentIndex])
-      .then((edges) => getNodeProps(edges, graphWidth, graphHeight))
-      .then((props) => setNodes(props))
+      .then((edges) => {
+          setNodeProps(getNodeProps(edges, graphWidth, graphHeight));
+          setEdgeProps(getEdgeProps(edges));
+          })
       .catch(console.error);
   }, [codes, currentIndex]);
 
@@ -44,7 +48,7 @@ function App() {
     <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100vw', height: '100vh', gap: '2rem', alignItems: 'center' }}>
       <Header codes={codes} currentIndex={currentIndex} onPrev={handlePrev} onNext={handleNext} />
         <div id='graph-container' ref={graphRef} style={{ position: 'relative', flex: '1', width: '90vw', height: '90vh' }}>
-        <ReactFlow nodes={nodes} nodeTypes={nodeTypes}/>
+        <ReactFlow nodes={nodeProps} nodeTypes={nodeTypes}/>
         </div>
     </div>
   );
