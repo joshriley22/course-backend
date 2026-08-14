@@ -7,3 +7,11 @@ export interface CourseEdge {
   target_status: number;
   depth: number;
 }
+
+ export interface CourseNodeProps {
+        id: string;
+        type: string;
+        position: { x: number; y: number };
+        data: CourseData;
+        style?: CSSProperties;
+    }

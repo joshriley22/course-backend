@@ -8,7 +8,6 @@ import { CourseNode } from './components/CourseNode';
 import { getNodeProps } from './utils/NodeInitializer';
 import { getEdgeProps } from './utils/EdgeInitializer';
 import { ReactFlow } from '@xyflow/react';
-import dagre from '@dagrejs/dagre';
 
 
 function App() {

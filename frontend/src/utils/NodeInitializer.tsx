@@ -2,27 +2,16 @@ import type { CourseNodeProps } from '../components/CourseNode.tsx';
 import { CourseNodeData } from '../components/CourseNode.tsx';
 import type { CourseEdgeData } from '../components/CourseEdge.tsx';
 import { getSourceNode, getTargetNode } from '../components/CourseEdge.tsx';
+import { getEdgeProps } from './EdgeInitializer.tsx';
+import { getPositionsWithNodeProps } from './NodePositionInitializer.tsx';
 
 
 
 export function getNodeProps(edges: CourseEdgeData[], graphWidth: number, graphHeight: number) : CourseNodeProps[] {
     const props : CourseNodeProps[] = [];
     const nodes : CourseNodeData[] = parseNodesFromEdges(edges);
-    const maxDepth = getMaxDepth(edges);
-
-    const nodesPerDepth = getNodesPerDepth(nodes, maxDepth);
-    const nodesPlacedPerRow = [];
-    for(let i = 0; i <= maxDepth; i++) {
-        nodesPlacedPerRow[i] = 0;
-    }
-    for(const node of nodes) {
-        const xPosition = Number((nodesPlacedPerRow[node.depth] / nodesPerDepth[node.depth]) * graphWidth);
-        const yPosition = Number((node.depth/maxDepth) * graphHeight);
-
-        props.push(node.getProps(xPosition, yPosition));
-        nodesPlacedPerRow[node.depth]++;
-        }
-    return props;
+    const edgeProps : CourseEdgeProps[] = getEdgeProps(edges);
+    return getPositionsWithNodeProps(nodes, edgeProps);
     }
 
 function parseNodesFromEdges(edges: CourseEdgeData[]) : CourseNodeData[] {
@@ -43,12 +32,12 @@ function parseNodesFromEdges(edges: CourseEdgeData[]) : CourseNodeData[] {
     return nodes;
 }
 
-function getMaxDepth(edges: CourseEdgeData[]) : number {
-    if(!edges || edges.length === 0) {
-        return 0;
-        }
-    return edges[0].depth;
-    }
+// function getMaxDepth(edges: CourseEdgeData[]) : number {
+//     if(!edges || edges.length === 0) {
+//         return 0;
+//         }
+//     return edges[0].depth;
+//     }
 
 function contains(list : CourseNodeData[], node : CourseNodeData) :  boolean {
     if(node === null) {
@@ -62,14 +51,14 @@ function contains(list : CourseNodeData[], node : CourseNodeData) :  boolean {
     return false;
 }
 
-function getNodesPerDepth(nodes : CourseNodeData[], maxDepth: number) : number[] {
-    const nodesPerDepth : number[] = [];
-    for( let i = 0; i <= maxDepth; i++  ) {
-        nodesPerDepth[i] = 0;
-        }
-    for(const node of nodes) {
-        nodesPerDepth[node.depth]++;
-        }
-
-    return nodesPerDepth;
-    }
+// function getNodesPerDepth(nodes : CourseNodeData[], maxDepth: number) : number[] {
+//     const nodesPerDepth : number[] = [];
+//     for( let i = 0; i <= maxDepth; i++  ) {
+//         nodesPerDepth[i] = 0;
+//         }
+//     for(const node of nodes) {
+//         nodesPerDepth[node.depth]++;
+//         }
+//
+//     return nodesPerDepth;
+//     }
