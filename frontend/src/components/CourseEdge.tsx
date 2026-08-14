@@ -10,6 +10,11 @@ export interface CourseEdgeData {
     depth: number
 }
 
+export interface CourseEdgeProps {
+    source: string
+    target: string
+    }
+
 export function getSourceNode(edge: CourseEdgeData) : CourseNodeData | null {
     if(edge.source_code !== null) {
         return new CourseNodeData(edge.source_code, edge.source_number, edge.depth-1);
