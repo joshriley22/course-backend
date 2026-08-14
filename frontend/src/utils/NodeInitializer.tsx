@@ -1,4 +1,3 @@
-import { setNodeMatrix } from './NodeMatrix.tsx';
 import type { CourseNodeProps } from '../components/CourseNode.tsx';
 import { CourseNodeData } from '../components/CourseNode.tsx';
 import type { CourseEdgeData } from '../components/CourseEdge.tsx';
@@ -10,15 +9,18 @@ export function getNodeProps(edges: CourseEdgeData[], graphWidth: number, graphH
     const props : CourseNodeProps[] = [];
     const nodes : CourseNodeData[] = parseNodesFromEdges(edges);
     const maxDepth = getMaxDepth(edges);
+
     const nodesPerDepth = getNodesPerDepth(nodes, maxDepth);
     const nodesPlacedPerRow = [];
-    for(let i = 0; i < maxDepth; i++) {
+    for(let i = 0; i <= maxDepth; i++) {
         nodesPlacedPerRow[i] = 0;
     }
     for(const node of nodes) {
         const xPosition = Number((nodesPlacedPerRow[node.depth] / nodesPerDepth[node.depth]) * graphWidth);
         const yPosition = Number((node.depth/maxDepth) * graphHeight);
+
         props.push(node.getProps(xPosition, yPosition));
+        nodesPlacedPerRow[node.depth]++;
         }
     return props;
     }
