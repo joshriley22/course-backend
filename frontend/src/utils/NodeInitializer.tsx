@@ -7,7 +7,7 @@ import { getPositionsWithNodeProps } from './NodePositionInitializer.tsx';
 
 
 
-export function getNodeProps(edges: CourseEdgeData[], graphWidth: number, graphHeight: number) : CourseNodeProps[] {
+export function getNodeProps(edges: CourseEdgeData[]) : CourseNodeProps[] {
     const props : CourseNodeProps[] = [];
     const nodes : CourseNodeData[] = parseNodesFromEdges(edges);
     const edgeProps : CourseEdgeProps[] = getEdgeProps(edges);
