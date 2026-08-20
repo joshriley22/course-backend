@@ -1,5 +1,6 @@
 import { useRef, useCallback } from 'react';
 import type { CSSProperties, PointerEvent } from 'react';
+import { Position, Handle } from '@xyflow/react';
 
 export class CourseNodeData {
 
@@ -66,7 +67,11 @@ export function CourseNode(
                 cursor: 'grab', textAlign: 'center',
                 backgroundColor: 'white', justifyContent: 'center',
                 outline: '2px solid black'
-            }} />
+            }} >
+
+            <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
+            <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
+            </div>
             <span style={{ zIndex: 100 }}>{code}{number}</span>
         </div>
     );

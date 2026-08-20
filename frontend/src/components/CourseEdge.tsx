@@ -1,3 +1,5 @@
+import { StraightEdge } from '@xyflow/react';
+import type { EdgeProps } from '@xyflow/react';
 import { CourseNodeData } from './CourseNode';
 
 export interface CourseEdgeData {
@@ -11,9 +13,15 @@ export interface CourseEdgeData {
 }
 
 export interface CourseEdgeProps {
+    id: string
     source: string
     target: string
+    type: string
     }
+
+export function CourseEdge(props: EdgeProps) {
+    return <StraightEdge {...props} />;
+}
 
 export function getSourceNode(edge: CourseEdgeData) : CourseNodeData | null {
     if(edge.source_code !== null) {

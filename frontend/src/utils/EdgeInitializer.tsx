@@ -9,8 +9,10 @@ export function getEdgeProps(edges: CourseEdgeData[]) : CourseEdgeProps[] {
                 const sourceId = getSourceNode(edge)!.string();
                 const targetId = getTargetNode(edge)!.string();
                 const edgeProp: CourseEdgeProps = {
+                id:`${sourceId}->${targetId}`,
                 source: sourceId,
-                target: targetId
+                target: targetId,
+                type: "courseEdge"
                  };
 
              console.log(edgeProp);
