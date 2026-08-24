@@ -10,6 +10,16 @@ class MajorRepository:
 
         result = session.run(query)
 
-        return [response.data() for response in result]
+        return [response.data() for response in result];
 
+    def get_fields(self, session, major_name):
 
+        query = """
+        MATCH (m:Major {name: $major_name})
+        RETURN m.fields AS fields
+        """
+
+        result = session.run(query, major_name=major_name)
+        record = result.single()
+
+        return record["fields"] if record else None

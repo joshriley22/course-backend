@@ -7,3 +7,6 @@ class MajorService:
 
     def get_majors(self, session):
         return self.repo.get_majors(session)
+
+    def get_fields(self, session, major_name):
+        return self.repo.get_fields(session, major_name)
