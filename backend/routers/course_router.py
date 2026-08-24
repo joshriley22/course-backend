@@ -8,8 +8,8 @@ from backend.schemas.course_schema import CourseCreate
 router = APIRouter()
 
 service = CourseService()
-#
-# @router.get("/courses/next-courses")
+
+@router.get("/courses/next-courses")
 def get_next_courses(course_list):
     for course in course_list:
         if not course_exists(course["code"], course["number"]):
