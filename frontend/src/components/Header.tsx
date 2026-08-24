@@ -3,24 +3,29 @@ interface HeaderProps {
   currentIndex: number;
   onPrev: () => void;
   onNext: () => void;
+  height: string;
+  background: string;
+  fontColor: string;
 }
 
-export function Header({ codes, currentIndex, onPrev, onNext }: HeaderProps) {
-  const code = codes[currentIndex] ?? '…';
+export function Header({ codes, currentIndex, onPrev, onNext, height, background, fontColor }: HeaderProps) {
+
+    const code = codes[currentIndex];
+
 
   return (
     <header
       style={{
-        height: 60,
+        height: `${height}`,
         width: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 24,
-        background: '#1e293b',
-        color: '#f1f5f9',
+        color: `${fontColor}`,
         flexShrink: 0,
         userSelect: 'none',
+        background:`${background}`,
       }}
     >
       <button
@@ -62,7 +67,7 @@ const arrowStyle: React.CSSProperties = {
   color: '#94a3b8',
   fontSize: 22,
   cursor: 'pointer',
-  padding: '4px 8px',
+  padding: '0px 8px',
   borderRadius: 6,
   transition: 'color 0.15s',
   lineHeight: 1,
