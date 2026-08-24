@@ -20,3 +20,10 @@ export async function fetchMajors(): Promise<string[]> {
     return data.map((d) => d.name).sort();
     }
 
+export async function fetchFields(major_name: string): Promise<string[]> {
+    const res = await fetch(`/majors/${encodeURIComponent(major_name)}/fields`);
+    if (!res.ok) throw new Error('Failed to fetch fields');
+    const data: { field: string[] } = await res.json();
+    return data;
+    }
+
