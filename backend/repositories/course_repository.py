@@ -158,35 +158,28 @@ class CourseRepository:
         result = session.run(query, course_code=course_code, course_number=course_number)
         return result.single()["EXISTS"]
 
-    def get_course_edges(self, session, course_code):
+    def get_course_edges(self, session, major_name, field):
         query = """
-            MATCH (start:Course {code:$course_code})
-            WHERE NOT ()-[:PREREQUISITE]->(start) AND (start)-[:PREREQUISITE]->({code:$course_code})
-            WITH start
-            MATCH path = (start)-[:PREREQUISITE*0..]->(c:Course {code:$course_code})
-            WHERE EXISTS { MATCH (c1:Course)-[:PREREQUISITE]->(c) }
-            MATCH (c1:Course)-[:PREREQUISITE]->(c) 
+            MATCH (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c:Course)
+            MATCH (c1:Course)-[:PREREQUISITE]->(c)
             WHERE c1.number <> c.number
-            WITH c, c1, start, path
-            OPTIONAL MATCH source_path = (start)-[:PREREQUISITE*0..7]->(c1)
-            WITH c, c1, min(length(source_path)) + 1 AS source_depth, min(length(path)) AS target_depth
-            WITH c, c1, [source_depth, target_depth] AS depths
-            UNWIND depths AS d
-            WITH c, c1, max(d) AS depth
-            RETURN c1.code AS source_code, c1.number AS source_number, c1.elective_status AS source_status, c.code AS target_code, c.number AS target_number, c.elective_status AS target_status, depth
-            ORDER BY depth DESC, toInteger(c1.number) DESC
+            OPTIONAL MATCH (:Major {name:$major_name})-[source_rel:COURSE_OF {relationship:$field}]->(c1)
+            RETURN c1.code AS source_code, c1.number AS source_number, c1.elective_status AS source_status,
+                   c.code AS target_code, c.number AS target_number, c.elective_status AS target_status,
+                   source_rel IS NOT NULL AS source_matches_field, 1 AS depth
+            ORDER BY toInteger(c1.number) DESC
             """
-        result = session.run(query, course_code=course_code)
+        result = session.run(query, major_name=major_name, field=field)
         return [record.data() for record in result]
 
 
-    def get_sink_nodes(self, session, course_code):
+    def get_sink_nodes(self, session, major_name, field):
         query = """
-        MATCH (n:Course {code:$course_code})
-        WHERE NOT (n)-[:PREREQUISITE]->(:Course {code:$course_code})
+        MATCH (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(n:Course)
+        WHERE NOT (n)-[:PREREQUISITE]->(:Course)
         RETURN n.code AS code, n.number AS number, n.elective_status AS elective_status"""
 
-        result = session.run(query, course_code=course_code)
+        result = session.run(query, major_name=major_name, field=field)
         return [record.data() for record in result]
 
     def get_codes(self, session):

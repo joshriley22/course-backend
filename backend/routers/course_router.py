@@ -41,11 +41,11 @@ def get_codes():
         return service.get_codes(session)
 
 
-@router.get("/courses/{course_code}/edges")
-def get_course_edges(course_code: str):
+@router.get("/courses/{major_name}/{field}/edges")
+def get_course_edges(major_name: str, field: str):
 
     with db.get_session() as session:
-        return service.get_course_edges(session, course_code)
+        return service.get_course_edges(session, major_name, field)
 
 
 @router.get("/courses/{course_code}/{course_number}")
