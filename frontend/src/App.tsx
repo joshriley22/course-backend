@@ -49,29 +49,30 @@ function App() {
       fetchFields(majors[majorIndex])
         .then((fields) => setFields(fields))
         .catch(console.error);
+      setFieldIndex(0);
   }, [majors, majorIndex]);
 
   const formattedFields = formatFields(fields);
 
 
-//    useEffect(() => {
-//      if (majors.length === 0) return;
-//      fetchCourseEdges(majors[majorIndex])
-//        .then((edges) => {
-//            setNodeProps(getNodeProps(edges));
-//            setEdgeProps(getEdgeProps(edges));
-//            })
-//        .catch(console.error);
-//    }, [majors, majorIndex]);
+   useEffect(() => {
+     if (majors.length === 0) return;
+     fetchCourseEdges(majors[majorIndex], fields[fieldIndex])
+       .then((edges) => {
+           setNodeProps(getNodeProps(edges));
+           setEdgeProps(getEdgeProps(edges));
+           })
+       .catch(console.error);
+   }, [majors, majorIndex, fields, fieldIndex]);
 
-  const handlePrev = useCallback((set: function) => set((i) => Math.max(0, i - 1)), []);
-  const handleNext = useCallback((set: function, list: string[]) => set((i) => Math.min(list.length - 1, i + 1)), []);
+  const handlePrev = useCallback((set, list: string[]) => set((i) => i == 0 ? list.length - 1 : i - 1), []);
+  const handleNext = useCallback((set, list: string[]) => set((i) => i == list.length - 1 ? 0 : i + 1), []);
 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100vw', height: '100vh', alignItems: 'center' }}>
-      <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex)} onNext={() => handleNext(setMajorIndex, majors)} height={'60px'} background={'#1e293b'} fontColor={'#ffffff'} />
-        <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
+      <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} height={'60px'} background={'#1e293b'} fontColor={'#ffffff'} />
+        <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
         <div id='graph-container' style={{ position: 'relative', flex: '1', width: '90vw', height: '90vh' }}>
         <ReactFlowProvider>
           <Flow nodeProps={nodeProps} edgeProps={edgeProps} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange} />
