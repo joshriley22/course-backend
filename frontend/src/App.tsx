@@ -8,6 +8,7 @@ import { CourseNode } from './components/CourseNode';
 import { CourseEdge } from './components/CourseEdge';
 import { getNodeProps } from './utils/NodeInitializer';
 import { getEdgeProps } from './utils/EdgeInitializer';
+import { formatFields } from './utils/FieldFormatter';
 import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges } from '@xyflow/react';
 
 
@@ -50,6 +51,7 @@ function App() {
         .catch(console.error);
   }, [majors, majorIndex]);
 
+  const formattedFields = formatFields(fields);
 
 
 //    useEffect(() => {
@@ -69,7 +71,7 @@ function App() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100vw', height: '100vh', alignItems: 'center' }}>
       <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex)} onNext={() => handleNext(setMajorIndex, majors)} height={'60px'} background={'#1e293b'} fontColor={'#ffffff'} />
-        <Header codes={fields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
+        <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
         <div id='graph-container' style={{ position: 'relative', flex: '1', width: '90vw', height: '90vh' }}>
         <ReactFlowProvider>
           <Flow nodeProps={nodeProps} edgeProps={edgeProps} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange} />
