@@ -1,4 +1,4 @@
-import { StraightEdge } from '@xyflow/react';
+import { BezierEdge } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 import { CourseNodeData } from './CourseNode';
 
@@ -19,7 +19,7 @@ export interface CourseEdgeProps {
     }
 
 export function CourseEdge(props: EdgeProps) {
-    return <StraightEdge {...props} />;
+    return <BezierEdge {...props} />;
 }
 
 export function getSourceNode(edge: CourseEdgeData) : CourseNodeData | null {

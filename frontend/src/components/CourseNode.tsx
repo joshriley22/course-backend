@@ -65,7 +65,7 @@ export function CourseNode(
         >
             <div style={{
                 display: 'flex', minWidth: '7vh', minHeight: '5vh', borderRadius: '25%',
-                width: 'fit-content',
+                width: 'fit-content', gap: '10px', padding: '15px',
                 cursor: 'grab', alignItems: 'center',
                 backgroundColor: 'white', justifyContent: 'center',
                 outline: '2px solid #414141'
@@ -73,7 +73,7 @@ export function CourseNode(
 
 
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
-            <span style={{ zIndex: 100, padding: '5%' }} >{name}</span>
+            <span style={{ zIndex: 100, fontWeight: 400, fontSize: '16px'}} >{name}</span>
             <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
             </div>
 
