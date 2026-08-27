@@ -1,6 +1,7 @@
 import { useRef, useCallback } from 'react';
 import type { CSSProperties, PointerEvent } from 'react';
 import { Position, Handle } from '@xyflow/react';
+import { motion } from 'framer-motion';
 
 export class CourseNodeData {
 
@@ -59,20 +60,23 @@ export function CourseNode(
     { data, style }: CourseNodeProps) {
     const { code, number } = data;
     return (
-        <div
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', ...style }}
+        <motion.div
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', ...style }} whileHover= {{scale: 1.1}}
         >
             <div style={{
-                width: '7vh', height: '7vh', borderRadius: '50%',
-                cursor: 'grab', textAlign: 'center',
+                display: 'flex', minWidth: '7vh', minHeight: '5vh', borderRadius: '25%',
+                width: 'fit-content',
+                cursor: 'grab', alignItems: 'center',
                 backgroundColor: 'white', justifyContent: 'center',
-                outline: '2px solid black'
+                outline: '2px solid #414141'
             }} >
 
+
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
+            <span style={{ zIndex: 100 }} >{code}{number}</span>
             <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
             </div>
-            <span style={{ zIndex: 100 }}>{code}{number}</span>
-        </div>
+
+        </motion.div>
     );
 }
