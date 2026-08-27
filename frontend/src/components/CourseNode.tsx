@@ -7,12 +7,12 @@ export class CourseNodeData {
 
     code: string;
     number: string;
-    depth: number;
+    name: string;
 
-    constructor(code: string, number: string, depth: number) {
+    constructor(code: string, number: string, name: string) {
         this.code = code;
         this.number = number;
-        this.depth = depth;
+        this.name = name;
        }
 
     equals(other: CourseNodeData): boolean {
@@ -31,12 +31,12 @@ export class CourseNodeData {
        return parseInt(this.number, 10);
        }
 
-   getDepth(): number {
-        return this.depth;
+   getName(): string {
+        return this.name;
        }
 
    getProps(x : number, y : number ): CourseNodeProps {
-       return {id : this.string(), type : "courseNode", position : {x, y}, data : {code : this.getCode(), number : this.getNumber().toString() }}
+       return {id : this.string(), type : "courseNode", position : {x, y}, data : { name: this.name }}
        }
 
 }
@@ -58,7 +58,7 @@ export class CourseNodeData {
 
 export function CourseNode(
     { data, style }: CourseNodeProps) {
-    const { code, number } = data;
+    const { name } = data;
     return (
         <motion.div
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', ...style }} whileHover= {{scale: 1.1}}
@@ -73,7 +73,7 @@ export function CourseNode(
 
 
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
-            <span style={{ zIndex: 100 }} >{code}{number}</span>
+            <span style={{ zIndex: 100, padding: '5%' }} >{name}</span>
             <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
             </div>
 

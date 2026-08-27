@@ -164,10 +164,9 @@ class CourseRepository:
             MATCH (c1:Course)-[:PREREQUISITE]->(c)
             WHERE c1.number <> c.number
             OPTIONAL MATCH (:Major {name:$major_name})-[source_rel:COURSE_OF {relationship:$field}]->(c1)
-            RETURN c1.code AS source_code, c1.number AS source_number, c1.elective_status AS source_status,
-                   c.code AS target_code, c.number AS target_number, c.elective_status AS target_status,
-                   source_rel IS NOT NULL AS source_matches_field, 1 AS depth
-            ORDER BY toInteger(c1.number) DESC
+            RETURN c1.code AS source_code, c1.number AS source_number, c1.name AS source_name,
+                   c.code AS target_code, c.number AS target_number, c.name AS target_name,
+                   source_rel IS NOT NULL AS source_matches_field
             """
         result = session.run(query, major_name=major_name, field=field)
         return [record.data() for record in result]
@@ -177,7 +176,8 @@ class CourseRepository:
         query = """
         MATCH (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(n:Course)
         WHERE NOT (n)-[:PREREQUISITE]->(:Course)
-        RETURN n.code AS code, n.number AS number, n.elective_status AS elective_status"""
+        RETURN n.code AS code, n.number AS number, n.name AS name
+        """
 
         result = session.run(query, major_name=major_name, field=field)
         return [record.data() for record in result]

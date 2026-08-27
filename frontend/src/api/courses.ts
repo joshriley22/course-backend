@@ -9,7 +9,7 @@ export async function fetchCodes(): Promise<string[]> {
 
 export async function fetchCourseEdges(major: string, field: string): Promise<CourseEdge[]> {
   const res = await fetch(`/courses/${major}/${field}/edges`);
-  if (!res.ok) throw new Error(`Failed to fetch edges for ${code}`);
+  if (!res.ok) throw new Error(`Failed to fetch edges for ${major}`);
   return res.json();
   }
 

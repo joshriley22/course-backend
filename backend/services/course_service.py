@@ -76,7 +76,7 @@ class CourseService:
         sinks = self.repo.get_sink_nodes(session, major_name, field)
 
         for sink in sinks:
-            edges.append({"source_code": sink["code"], "source_number": sink["number"], "source_status": sink["elective_status"], "target_code": None, "target_number": None, "target_status": None, "depth": 1})
+            edges.append({"source_code": sink["code"], "source_number": sink["number"], "source_name": sink["name"], "target_code": None, "target_number": None, "target_name": None})
 
         return edges
 
