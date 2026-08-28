@@ -173,10 +173,11 @@ class CourseRepository:
 
         query = """
         MATCH (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c:Course)
-        OPTIONAL MATCH (c:Course)-[e:PREREQUISITE_RELATIONSHIP]->(c1:Course)
-        WHERE c1.number <> c.number AND (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c1)
+        MATCH (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c1)
+        MATCH (c)-[e:PREREQUISITE_RELATIONSHIP]->(c1)
         RETURN c.code AS source_code, c.number AS source_number, c.name AS source_name,
-        c1.code AS target_code, c1.number AS target_number, c1.name AS target_name, e.relationship AS relationship
+        c1.code AS target_code, c1.number AS target_number, c1.name AS target_name, e.relationship AS relationship, 
+        e.for_course_code AS for_course_code, e.for_course_number AS for_course_number
         """
 
         result = session.run(query, major_name=major_name, field=field);
