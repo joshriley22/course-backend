@@ -23,6 +23,10 @@ export class CourseNodeData {
         return `${this.code}${this.number}`;
        }
 
+    getId() : string {
+        return string();
+        }
+
     getCode() : string {
         return this.code;
        }
