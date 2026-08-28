@@ -10,7 +10,35 @@ export async function fetchCodes(): Promise<string[]> {
 export async function fetchCourseEdges(major: string, field: string): Promise<CourseEdge[]> {
   const res = await fetch(`/courses/${major}/${field}/edges`);
   if (!res.ok) throw new Error(`Failed to fetch edges for ${major}`);
-  return res.json();
+  const data = await res.json();
+  return data.map((d: any) => ({
+    source_code: d.source_code,
+    source_number: d.source_number,
+    source_name: d.source_name,
+    target_code: d.target_code,
+    target_number: d.target_number,
+    target_name: d.target_name,
+    for_course_code: d.for_course_code,
+    for_course_number: d.for_course_number,
+    relationship: d.relationship,
+  }));
+  }
+
+export async function fetchCoPrereqEdges(major: string, field: string): Promise<CourseEdge[]> {
+  const res = await fetch(`/courses/${major}/${field}/co-prereq-edges`);
+  if (!res.ok) throw new Error(`Failed to fetch edges for ${major}`);
+  const data = await res.json();
+  return data.map((d: any) => ({
+    source_code: d.source_code,
+    source_number: d.source_number,
+    source_name: d.source_name,
+    target_code: d.target_code,
+    target_number: d.target_number,
+    target_name: d.target_name,
+    for_course_code: d.for_course_code,
+    for_course_number: d.for_course_number,
+    relationship: d.relationship,
+  }));
   }
 
 export async function fetchMajors(): Promise<string[]> {
