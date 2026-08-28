@@ -61,11 +61,11 @@ export function CourseNode(
     const { name } = data;
     return (
         <motion.div
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', ...style }} whileHover= {{scale: 1.1}}
+            style={{ display: 'flex', width: '150px', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', ...style }} whileHover= {{scale: 1.1}}
         >
             <div style={{
                 display: 'flex', minWidth: '7vh', minHeight: '5vh', borderRadius: '25%',
-                width: 'fit-content', gap: '10px', padding: '15px',
+                width: '100%', gap: '10px', padding: '15px',
                 cursor: 'grab', alignItems: 'center',
                 backgroundColor: 'white', justifyContent: 'center',
                 outline: '2px solid #414141'

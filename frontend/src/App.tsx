@@ -10,18 +10,35 @@ import { getNodeProps } from './utils/NodeInitializer';
 import { getEdgeProps } from './utils/EdgeInitializer';
 import { formatFields } from './utils/FieldFormatter';
 import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges } from '@xyflow/react';
+import { useCollisionSimulation } from './utils/useCollisionSimulation';
 
 
-function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange }) {
+function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick }) {
   const { fitView } = useReactFlow();
 
   useEffect(() => {
     if (nodeProps.length > 0) {
       fitView();
     }
-  }, [nodeProps, fitView]);
+    // Re-fit throughout the collision pass (throttled in
+    // useCollisionSimulation) so the camera tracks the growing layout
+    // bounds instead of jumping once at the end.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layoutTick, fitView]);
 
-  return <ReactFlow nodes={nodeProps} nodeTypes={nodeTypes} edges={edgeProps} edgeTypes={edgeTypes} onNodesChange={onNodesChange} fitView/>;
+  return (
+    <ReactFlow
+      nodes={nodeProps}
+      nodeTypes={nodeTypes}
+      edges={edgeProps}
+      edgeTypes={edgeTypes}
+      onNodesChange={onNodesChange}
+      onNodeDragStart={onNodeDragStart}
+      onNodeDrag={onNodeDrag}
+      onNodeDragStop={onNodeDragStop}
+      fitView
+    />
+  );
 }
 
 function App() {
@@ -68,6 +85,7 @@ function App() {
   const handlePrev = useCallback((set, list: string[]) => set((i) => i == 0 ? list.length - 1 : i - 1), []);
   const handleNext = useCallback((set, list: string[]) => set((i) => i == list.length - 1 ? 0 : i + 1), []);
 
+  const { onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick } = useCollisionSimulation(nodeProps, setNodeProps);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100vw', height: '100vh', alignItems: 'center' }}>
@@ -75,7 +93,17 @@ function App() {
         <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
         <div id='graph-container' style={{ position: 'relative', flex: '1', width: '90vw', height: '90vh' }}>
         <ReactFlowProvider>
-          <Flow nodeProps={nodeProps} edgeProps={edgeProps} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange} />
+          <Flow
+            nodeProps={nodeProps}
+            edgeProps={edgeProps}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onNodesChange={onNodesChange}
+            onNodeDragStart={onNodeDragStart}
+            onNodeDrag={onNodeDrag}
+            onNodeDragStop={onNodeDragStop}
+            layoutTick={layoutTick}
+          />
         </ReactFlowProvider>
         </div>
     </div>
