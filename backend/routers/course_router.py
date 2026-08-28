@@ -47,6 +47,11 @@ def get_course_edges(major_name: str, field: str):
     with db.get_session() as session:
         return service.get_course_edges(session, major_name, field)
 
+@router.get("/courses/{major_name}/{field}/co-prereq-edges")
+def get_co_prereq_edges(major_name: str, field: str):
+
+    with db.get_session() as session:
+        return service.get_co_prereq_edges(session, major_name, field)
 
 @router.get("/courses/{course_code}/{course_number}")
 def get_course(course_code, course_number):

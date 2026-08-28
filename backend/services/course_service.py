@@ -73,11 +73,11 @@ class CourseService:
     def get_course_edges(self, session, major_name, field):
 
         edges = self.repo.get_course_edges(session, major_name, field)
-        sinks = self.repo.get_sink_nodes(session, major_name, field)
+        return edges
 
-        for sink in sinks:
-            edges.append({"source_code": sink["code"], "source_number": sink["number"], "source_name": sink["name"], "target_code": None, "target_number": None, "target_name": None})
+    def get_co_prereq_edges(self, session, major_name, field):
 
+        edges = self.repo.get_co_prereq_edges(session, major_name, field)
         return edges
 
     def get_codes(self, session):
