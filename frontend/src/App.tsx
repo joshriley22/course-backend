@@ -2,12 +2,12 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
 
-import { fetchCodes, fetchCourseEdges, fetchMajors, fetchFields } from './api/courses';
+import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields } from './api/courses';
 import { Header } from './components/Header';
 import { CourseNode } from './components/CourseNode';
-import { CourseEdge } from './components/CourseEdge';
+import { CourseEdge, CoPrereqEdge } from './components/CourseEdge';
 import { getNodeProps } from './utils/NodeInitializer';
-import { getEdgeProps } from './utils/EdgeInitializer';
+import { getEdgesProps } from './utils/EdgeInitializer';
 import { formatFields } from './utils/FieldFormatter';
 import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges } from '@xyflow/react';
 import { useCollisionSimulation } from './utils/useCollisionSimulation';
@@ -43,14 +43,16 @@ function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNod
 
 function App() {
   const [nodeProps, setNodeProps] = useState([]);
-  const [edgeProps, setEdgeProps] = useState([]);
+  const [courseEdgeProps, setCourseEdgeProps] = useState([]);
+  const [coprereqEdgeProps, setCoprereqEdgeProps] = useState([]);
+  const edgeProps = courseEdgeProps.concat(coprereqEdgeProps);
   const [majors, setMajors] = useState<string[]>([]);
   const [fields, setFields] = useState<string[]>([]);
   const [majorIndex, setMajorIndex] = useState(0);
   const [fieldIndex, setFieldIndex] = useState(0);
 
   const nodeTypes = { courseNode : CourseNode };
-  const edgeTypes = { courseEdge : CourseEdge };
+  const edgeTypes = { courseEdge : CourseEdge, coprereqEdge : CoPrereqEdge };
 
   const onNodesChange = useCallback((changes) => setNodeProps((nds) => applyNodeChanges(changes, nds)),
     []);
@@ -77,8 +79,17 @@ function App() {
      fetchCourseEdges(majors[majorIndex], fields[fieldIndex])
        .then((edges) => {
            setNodeProps(getNodeProps(edges));
-           setEdgeProps(getEdgeProps(edges));
+           setCourseEdgeProps(getEdgesProps(edges));
            })
+       .catch(console.error);
+   }, [majors, majorIndex, fields, fieldIndex]);
+
+   useEffect(() => {
+     if (majors.length === 0 || fields.length === 0) return;
+     fetchCoPrereqEdges(majors[majorIndex], fields[fieldIndex])
+       .then((coprereqEdges) => {
+         setCoprereqEdgeProps(getEdgesProps(coprereqEdges));
+       })
        .catch(console.error);
    }, [majors, majorIndex, fields, fieldIndex]);
 

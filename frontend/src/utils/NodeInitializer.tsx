@@ -2,7 +2,7 @@ import type { CourseNodeProps } from '../components/CourseNode.tsx';
 import { CourseNodeData } from '../components/CourseNode.tsx';
 import type { CourseEdgeData } from '../components/CourseEdge.tsx';
 import { getSourceNode, getTargetNode } from '../components/CourseEdge.tsx';
-import { getEdgeProps } from './EdgeInitializer.tsx';
+import { getEdgesProps } from './EdgeInitializer.tsx';
 import { getPositionsWithNodeProps } from './NodePositionInitializer.tsx';
 
 
@@ -10,7 +10,7 @@ import { getPositionsWithNodeProps } from './NodePositionInitializer.tsx';
 export function getNodeProps(edges: CourseEdgeData[]) : CourseNodeProps[] {
     const props : CourseNodeProps[] = [];
     const nodes : CourseNodeData[] = parseNodesFromEdges(edges);
-    const edgeProps : CourseEdgeProps[] = getEdgeProps(edges);
+    const edgeProps : CourseEdgeProps[] = getEdgesProps(edges);
     return getPositionsWithNodeProps(nodes, edgeProps);
     }
 

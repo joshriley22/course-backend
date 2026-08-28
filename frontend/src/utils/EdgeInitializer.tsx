@@ -1,21 +1,15 @@
-import type { CourseEdgeData, CourseEdgeProps } from '../components/CourseEdge.tsx';
-import { getSourceNode, getTargetNode } from'../components/CourseEdge.tsx';
+import type { CourseEdgeProps } from '../components/CourseEdge.tsx';
+import { CourseEdgeData, getSourceNode, getTargetNode} from'../components/CourseEdge.tsx';
 
-export function getEdgeProps(edges: CourseEdgeData[]) : CourseEdgeProps[] {
+export function getEdgesProps(edges: CourseEdgeData[]) : CourseEdgeProps[] {
 
     const edgeProps: CourseEdgeProps[] = [];
         for(const edge of edges) {
-            if(edge.source_code && edge.target_code) {
-                const sourceId = getSourceNode(edge)!.string();
-                const targetId = getTargetNode(edge)!.string();
-                const edgeProp: CourseEdgeProps = {
-                id:`${sourceId}->${targetId}`,
-                source: sourceId,
-                target: targetId,
-                type: "courseEdge"
-                 };
-
-             console.log(edgeProp);
+            const e = edge instanceof CourseEdgeData ? edge : Object.assign(new CourseEdgeData('','','','','','','',''), edge)
+            if(e.source_code && e.target_code) {
+                const sourceId = getSourceNode(e)!.string();
+                const targetId = getTargetNode(e)!.string();
+                const edgeProp: CourseEdgeProps = e.getEdgeProps();
 
                 edgeProps.push(edgeProp);
                 }

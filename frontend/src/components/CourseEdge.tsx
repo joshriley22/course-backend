@@ -3,40 +3,58 @@ import type { EdgeProps } from '@xyflow/react';
 import { CourseNodeData } from './CourseNode';
 
 export class CourseEdgeData {
-    source_code: string
-    source_number: string
-    source_name: string
-    target_code: string
-    target_number: string
-    target_name: string
-    for_course_code?: string | undefined
-    for_course_number?: string | undefined
-    relationship?: string | undefined
+    source_code: string;
+    source_number: string;
+    source_name: string;
+    target_code: string;
+    target_number: string;
+    target_name: string;
+    for_course_code?: string | undefined;
+    for_course_number?: string | undefined;
+    relationship?: string | undefined;
 
+    constructor(source_code: string, source_number: string, source_name: string, target_code: string, target_number: string, target_name: string, for_course_code: string, for_course_number: string, relationship?: string) {
+        this.source_code = source_code;
+        this.source_number = source_number;
+        this.source_name = source_name;
+        this.target_code = target_code;
+        this.target_number = target_number;
+        this.target_name = target_name;
+        this.for_course_code = for_course_code;
+        this.for_course_number = for_course_number;
+        this.relationship = relationship;
+    }
+
+
+    equals(other: CourseEdgeData): boolean {
+    return this.source_code === other.source_code &&
+        this.source_number === other.source_number &&
+        this.target_code === other.target_code &&
+        this.target_number === other.target_number;
 }
 
-export function edgesEqual(edge: CourseEdgeData, other: CourseEdgeData): boolean {
-    return edge.source_code === other.source_code &&
-        edge.source_number === other.source_number &&
-        edge.target_code === other.target_code &&
-        edge.target_number === other.target_number
+    getForCourseId() : string {
+    return `${this.for_course_code}${this.for_course_number}`;
+    }
+
+    getEdgeSourceId(this: CourseEdgeData) : string {
+    return `${this.source_code}${this.source_number}`;
+    }
+
+    getEdgeTargetId(this: CourseEdgeData) : string {
+    return `${this.target_code}${this.target_number}`;
+    }
+
+    getEdgeProps() : CourseEdgeProps {
+    return {
+                id: this.getEdgeSourceId() + '->' + this.getEdgeTargetId()  + ((this.relationship === undefined) ? '' : `For ${this.for_course_code}${this.for_course_number}${this.relationship}`),
+                source: this.getEdgeSourceId(),
+                target: this.getEdgeTargetId(),
+                type: (this.relationship) ? "coprereqEdge" : "courseEdge",
+                label: (this.relationship) ? this.relationship.toUpperCase() : "",
+                 };
+    }
 }
-
-export function getForCourseId(edge: CourseEdgeData) : string {
-    return `${edge.for_course_code}${edge.for_course_number}`;
-    }
-
-export function getEdgeSourceId(edge: CourseEdgeData) : string {
-    return `${edge.source_code}${edge.source_number}`;
-    }
-
-export function getEdgeTargetId(edge: CourseEdgeData) : string {
-    return `${edge.target_code}${edge.target_number}`;
-    }
-
-export function getEdgeProps(edge: CourseEdgeData) : CourseEdgeProps {
-    return {id: `${getEdgeSourceId(edge)}->${getEdgeTargetId(edge)}`, source: getEdgeSourceId(edge), target: getEdgeTargetId(edge), type: (edge.relationship === undefined) ? 'courseEdge' : 'coPrereqEdge'}
-    }
 
 export interface CourseEdgeProps {
     id: string
