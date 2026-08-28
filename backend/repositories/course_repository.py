@@ -161,12 +161,10 @@ class CourseRepository:
     def get_course_edges(self, session, major_name, field):
         query = """
             MATCH (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c:Course)
-            MATCH (c1:Course)-[:PREREQUISITE]->(c)
-            WHERE c1.number <> c.number
-            OPTIONAL MATCH (:Major {name:$major_name})-[source_rel:COURSE_OF {relationship:$field}]->(c1)
-            RETURN c1.code AS source_code, c1.number AS source_number, c1.name AS source_name,
-                   c.code AS target_code, c.number AS target_number, c.name AS target_name,
-                   source_rel IS NOT NULL AS source_matches_field
+            OPTIONAL MATCH (c:Course)-[:PREREQUISITE]->(c1:Course)
+            WHERE c1.number <> c.number AND (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c1)
+            RETURN c.code AS source_code, c.number AS source_number, c.name AS source_name,
+                   c1.code AS target_code, c1.number AS target_number, c1.name AS target_name
             """
         result = session.run(query, major_name=major_name, field=field)
         return [record.data() for record in result]
