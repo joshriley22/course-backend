@@ -36,7 +36,7 @@ export class CourseNodeData {
        }
 
    getProps(x : number, y : number ): CourseNodeProps {
-       return {id : this.string(), type : "courseNode", position : {x, y}, data : { name: this.name }}
+       return {id : this.string(), type : "courseNode", position : {x, y}, data : { code: this.code, number: this.number,name: this.name }}
        }
 
 }
@@ -44,6 +44,7 @@ export class CourseNodeData {
     interface CourseData {
         code: string;
         number: string;
+        name: string;
     }
 
 
@@ -58,7 +59,7 @@ export class CourseNodeData {
 
 export function CourseNode(
     { data, style }: CourseNodeProps) {
-    const { name } = data;
+    const { code, number, name } = data;
     return (
         <motion.div
             style={{ display: 'flex', width: '150px', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', ...style }} whileHover= {{scale: 1.1}}
@@ -73,7 +74,7 @@ export function CourseNode(
 
 
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
-            <span style={{ zIndex: 100, fontWeight: 400, fontSize: '16px'}} >{name}</span>
+            <span style={{ zIndex: 100, fontWeight: 400, fontSize: '16px'}} >{name} ({code} {number})</span>
             <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
             </div>
 
