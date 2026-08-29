@@ -9,10 +9,11 @@ export class CourseNodeData {
     number: string;
     name: string;
 
-    constructor(code: string, number: string, name: string) {
+    constructor(code: string, number: string, name: string, rating: number) {
         this.code = code;
         this.number = number;
         this.name = name;
+        this.rating = rating;
        }
 
     equals(other: CourseNodeData): boolean {
@@ -40,7 +41,7 @@ export class CourseNodeData {
        }
 
    getProps(x : number, y : number ): CourseNodeProps {
-       return {id : this.string(), type : "courseNode", position : {x, y}, data : { code: this.code, number: this.number,name: this.name }}
+       return {id : this.string(), type : "courseNode", position : {x, y}, data : { code: this.code, number: this.number, name: this.name, rating: this.rating }}
        }
 
 }
@@ -49,6 +50,7 @@ export class CourseNodeData {
         code: string;
         number: string;
         name: string;
+        rating: number;
     }
 
 
@@ -66,7 +68,7 @@ const HOVER_Z_INDEX = 1000;
 
 export function CourseNode(
     { id, data }: CourseNodeProps) {
-    const { code, number, name } = data;
+    const { code, number, name, rating } = data;
 
     const [opened, setOpened] = useState<boolean>(false);
     const { updateNode } = useReactFlow();
@@ -102,7 +104,7 @@ export function CourseNode(
                     <span>{name}<br></br>({code} {number})</span>
                 </div>
                 <div style={{flexShrink: '0'}}>
-
+                    <span>{rating}/5</span>
                 </div>
             </div>
             <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />

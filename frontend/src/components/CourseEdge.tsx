@@ -6,20 +6,24 @@ export class CourseEdgeData {
     source_code: string;
     source_number: string;
     source_name: string;
+    source_rating: number;
     target_code: string;
     target_number: string;
     target_name: string;
+    target_rating: number;
     for_course_code?: string | undefined;
     for_course_number?: string | undefined;
     relationship?: string | undefined;
 
-    constructor(source_code: string, source_number: string, source_name: string, target_code: string, target_number: string, target_name: string, for_course_code: string, for_course_number: string, relationship?: string) {
+    constructor(source_code: string, source_number: string, source_name: string, source_rating: number, target_code: string, target_number: string, target_name: string, target_rating: number, for_course_code: string, for_course_number: string, relationship?: string) {
         this.source_code = source_code;
         this.source_number = source_number;
         this.source_name = source_name;
+        this.source_rating = source_rating;
         this.target_code = target_code;
         this.target_number = target_number;
         this.target_name = target_name;
+        this.target_rating = target_rating;
         this.for_course_code = for_course_code;
         this.for_course_number = for_course_number;
         this.relationship = relationship;
@@ -73,14 +77,14 @@ export function CoPrereqEdge(props: EdgeProps) {
 
 export function getSourceNode(edge: CourseEdgeData) : CourseNodeData | null {
     if(edge.source_code !== null) {
-        return new CourseNodeData(edge.source_code, edge.source_number, edge.source_name);
+        return new CourseNodeData(edge.source_code, edge.source_number, edge.source_name, edge.source_rating);
        }
     return null;
 }
 
 export function getTargetNode(edge: CourseEdgeData) : CourseNodeData | null {
     if(edge.target_code !== null) {
-        return new CourseNodeData(edge.target_code, edge.target_number, edge.target_name);
+        return new CourseNodeData(edge.target_code, edge.target_number, edge.target_name, edge.target_rating);
         }
     return null;
 }
