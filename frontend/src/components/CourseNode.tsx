@@ -84,7 +84,7 @@ export function CourseNode(
                 cursor: 'grab', alignItems: 'center',
                 backgroundColor: 'white', justifyContent: 'center',
                 outline: '2px solid #414141',
-            }} animate={{ height: opened ? 220 : 100 }}
+            }} animate={{ height: opened ? 250 : 100 }}
                onHoverStart={ () => {
                    setOpened(true);
                    updateNode(id, (node) => ({ style: { ...node.style, zIndex: HOVER_Z_INDEX } }));
@@ -99,14 +99,17 @@ export function CourseNode(
 
 
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'absolute', padding: '15px', top: '0', zIndex: 200, fontWeight: 500, fontSize: '16px' }}>
-                <div>
-                    <span>{name}<br></br>({code} {number})</span>
+            <motion.div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px', position: 'absolute', padding: '15px', top: '0', zIndex: 200, fontWeight: 500, fontSize: '16px' }} animate={{ y: opened ? 10 : 0 }}>
+                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                    <div>
+                        <span>{name}<br></br>({code} {number})</span>
+                    </div>
+                    <div style={{flexShrink: '0'}}>
+                        <span>{rating}/5</span>
+                    </div>
                 </div>
-                <div style={{flexShrink: '0'}}>
-                    <span>{rating}/5</span>
-                </div>
-            </div>
+
+            </motion.div>
             <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
             </motion.div>
         </MotionConfig>
