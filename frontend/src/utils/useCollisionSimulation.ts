@@ -21,8 +21,8 @@ interface SimNode extends SimulationNodeDatum {
 // a node's real resting footprint changes. Before a node has been
 // measured, fall back to its unresized on-screen size so the initial
 // layout pass still has something reasonable to work with.
-const NODE_WIDTH = 180;
-const FALLBACK_HEIGHT = 120;
+const NODE_WIDTH = 250;
+const FALLBACK_HEIGHT = 100;
 
 // The collision circle is the node's bounding-circle radius (half the
 // diagonal of its resting box), which guarantees the rectangles can't

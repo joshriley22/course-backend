@@ -62,9 +62,6 @@ export class CourseNodeData {
         measured?: { width?: number; height?: number };
     }
 
-// zIndex applied to a node's React Flow wrapper (not this component's own
-// markup) while it's hovered, so it stacks above sibling nodes instead of
-// just gaining a zIndex trapped inside its own wrapper's stacking context.
 const HOVER_Z_INDEX = 1000;
 
 export function CourseNode(
@@ -76,15 +73,15 @@ export function CourseNode(
 
     return (
         <div
-            style={{ display: 'flex', width: '150px', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '15px' }}
         >
         <MotionConfig transition={{ ease: 'easeOut', duration: 0.3 }}>
             <motion.div style={{
-                display: 'flex', minWidth: '7vh', minHeight: '5vh', borderRadius: '25%',
-                width: '100%', gap: '10px', padding: '15px',
+                display: 'flex', position: 'relative', borderRadius: '25%',
+                width: '250px',
                 cursor: 'grab', alignItems: 'center',
                 backgroundColor: 'white', justifyContent: 'center',
-                outline: '2px solid #414141', width: '180px',
+                outline: '2px solid #414141',
             }} animate={{ height: opened ? 220 : 100 }}
                onHoverStart={ () => {
                    setOpened(true);
@@ -100,7 +97,14 @@ export function CourseNode(
 
 
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
-            <span style={{ zIndex: 200, fontWeight: 400, fontSize: '16px'}}>{name} ({code} {number})</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'absolute', padding: '15px', top: '0', zIndex: 200, fontWeight: 500, fontSize: '16px' }}>
+                <div>
+                    <span>{name}<br></br>({code} {number})</span>
+                </div>
+                <div style={{flexShrink: '0'}}>
+
+                </div>
+            </div>
             <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
             </motion.div>
         </MotionConfig>
