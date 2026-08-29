@@ -1,7 +1,7 @@
-import { useRef, useCallback } from 'react';
-import type { CSSProperties, PointerEvent } from 'react';
-import { Position, Handle } from '@xyflow/react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import type { CSSProperties } from 'react';
+import { Position, Handle, useReactFlow } from '@xyflow/react';
+import { motion, MotionConfig } from 'framer-motion';
 
 export class CourseNodeData {
 
@@ -59,32 +59,51 @@ export class CourseNodeData {
         position: { x: number; y: number };
         data: CourseData;
         style?: CSSProperties;
-        // Populated by React Flow (via onNodesChange 'dimensions' changes)
-        // once the node has actually been rendered and measured.
         measured?: { width?: number; height?: number };
     }
 
+// zIndex applied to a node's React Flow wrapper (not this component's own
+// markup) while it's hovered, so it stacks above sibling nodes instead of
+// just gaining a zIndex trapped inside its own wrapper's stacking context.
+const HOVER_Z_INDEX = 1000;
+
 export function CourseNode(
-    { data, style }: CourseNodeProps) {
+    { id, data }: CourseNodeProps) {
     const { code, number, name } = data;
+
+    const [opened, setOpened] = useState<boolean>(false);
+    const { updateNode } = useReactFlow();
+
     return (
-        <motion.div
-            style={{ display: 'flex', width: '150px', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', ...style }} whileHover= {{scale: 1.1}}
+        <div
+            style={{ display: 'flex', width: '150px', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
         >
-            <div style={{
+        <MotionConfig transition={{ ease: 'easeOut', duration: 0.3 }}>
+            <motion.div style={{
                 display: 'flex', minWidth: '7vh', minHeight: '5vh', borderRadius: '25%',
                 width: '100%', gap: '10px', padding: '15px',
                 cursor: 'grab', alignItems: 'center',
                 backgroundColor: 'white', justifyContent: 'center',
-                outline: '2px solid #414141'
-            }} >
+                outline: '2px solid #414141', width: '180px',
+            }} animate={{ height: opened ? 220 : 100 }}
+               onHoverStart={ () => {
+                   setOpened(true);
+                   updateNode(id, (node) => ({ style: { ...node.style, zIndex: HOVER_Z_INDEX } }));
+               } }
+               onHoverEnd={ () => {
+                   setOpened(false);
+                   updateNode(id, (node) => {
+                       const { zIndex: _zIndex, ...style } = node.style ?? {};
+                       return { style };
+                   });
+               } } >
 
 
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
-            <span style={{ zIndex: 100, fontWeight: 400, fontSize: '16px'}} >{name} ({code} {number})</span>
+            <span style={{ zIndex: 200, fontWeight: 400, fontSize: '16px'}}>{name} ({code} {number})</span>
             <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
-            </div>
-
-        </motion.div>
+            </motion.div>
+        </MotionConfig>
+    </div>
     );
 }

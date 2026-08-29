@@ -84,14 +84,14 @@ function App() {
        .catch(console.error);
    }, [majors, majorIndex, fields, fieldIndex]);
 
-   useEffect(() => {
-     if (majors.length === 0 || fields.length === 0) return;
-     fetchCoPrereqEdges(majors[majorIndex], fields[fieldIndex])
-       .then((coprereqEdges) => {
-         setCoprereqEdgeProps(getEdgesProps(coprereqEdges));
-       })
-       .catch(console.error);
-   }, [majors, majorIndex, fields, fieldIndex]);
+//    useEffect(() => {
+//      if (majors.length === 0 || fields.length === 0) return;
+//      fetchCoPrereqEdges(majors[majorIndex], fields[fieldIndex])
+//        .then((coprereqEdges) => {
+//          setCoprereqEdgeProps(getEdgesProps(coprereqEdges));
+//        })
+//        .catch(console.error);
+//    }, [majors, majorIndex, fields, fieldIndex]);
 
   const handlePrev = useCallback((set, list: string[]) => set((i) => i == 0 ? list.length - 1 : i - 1), []);
   const handleNext = useCallback((set, list: string[]) => set((i) => i == list.length - 1 ? 0 : i + 1), []);

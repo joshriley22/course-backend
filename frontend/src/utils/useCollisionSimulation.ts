@@ -13,21 +13,23 @@ interface SimNode extends SimulationNodeDatum {
 }
 
 // CourseNode's rendered footprint varies with its content, so collision
-// radius is derived per-node from its actual measured width/height (set by
-// React Flow once it has laid the node out) rather than a fixed value.
-// Before a node has been measured, fall back to its unresized on-screen
-// size so the initial layout pass still has something reasonable to work
-// with.
-const FALLBACK_WIDTH = 150;
-const FALLBACK_HEIGHT = 80;
+// radius is derived per-node from its actual measured width (set by React
+// Flow once it has laid the node out) rather than a fixed value. Height is
+// deliberately excluded: CourseNode grows its height on hover as a purely
+// cosmetic affordance, and reacting to that would reheat the simulation
+// (and push neighboring nodes around) on every hover instead of only when
+// a node's real resting footprint changes. Before a node has been
+// measured, fall back to its unresized on-screen size so the initial
+// layout pass still has something reasonable to work with.
+const NODE_WIDTH = 180;
+const FALLBACK_HEIGHT = 120;
 
 // The collision circle is the node's bounding-circle radius (half the
-// diagonal of its measured box), which guarantees the rectangles can't
+// diagonal of its resting box), which guarantees the rectangles can't
 // visually overlap regardless of aspect ratio.
 function getNodeRadius(n: CourseNodeProps): number {
-    const width = n.measured?.width ?? FALLBACK_WIDTH;
-    const height = n.measured?.height ?? FALLBACK_HEIGHT;
-    return Math.hypot(width, height) / 2;
+    const width = NODE_WIDTH;
+    return Math.hypot(width, FALLBACK_HEIGHT) / 2;
 }
 // The x anchor is weak so overlapping nodes can spread out sideways; the y
 // anchor is strong so dagre's rank (prerequisite depth) stays intact instead
@@ -118,12 +120,15 @@ export function useCollisionSimulation(
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodeIdsSignature]);
 
-    // Keyed on measured sizes (not positions), so this only re-runs when a
-    // node's actual rendered footprint changes - e.g. once React Flow
-    // measures it for the first time, or it resizes - and not on every
-    // tick-driven position update from the simulation itself.
+    // Keyed on measured width only (not height, not positions), so this
+    // only re-runs when a node's actual resting footprint changes - e.g.
+    // once React Flow measures it for the first time, or its content
+    // width changes - and not on every tick-driven position update from
+    // the simulation itself, nor on the hover-driven height animation in
+    // CourseNode (which is purely cosmetic and shouldn't reheat the
+    // simulation or push neighbors around).
     const nodeDimensionsSignature = nodeProps
-        .map((n) => `${n.id}:${n.measured?.width ?? ''}x${n.measured?.height ?? ''}`)
+        .map((n) => `${n.id}:${n.measured?.width ?? ''}`)
         .join('|');
 
     useEffect(() => {
