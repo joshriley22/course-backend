@@ -43,17 +43,27 @@ class CourseRepository:
 
         return response
 
-    def get_course(self, session, code, number):
+    def get_course_details(self, session, code, number):
         query = """
-        MATCH(c:Course {code:$code, number:$number})
-        RETURN c
+        OPTIONAL MATCH (m:Major)-[requirement:COURSE_OF]->(c1:Course {code:$code, number:$number})
+        OPTIONAL MATCH (c2:Course)-[:PREREQUISITE]->(c1)
+        OPTIONAL MATCH (c1)-[:PREREQUISITE]->(c3)
+        WITH c1,
+        collect(DISTINCT {major_fields: requirement.relationship, major_name: m.name}) AS fields,
+        collect(DISTINCT { prereq_code: c2.code, prereq_number: c2.number, prereq_name: c2.name, prereq_rating: c2.rating}) AS prereqs,
+        collect(DISTINCT { child_code: c3.code,  child_number: c3.number,  child_name: c3.name, child_rating: c3.rating}) AS children
+        MATCH (p:Professor)-[:PROFESSOR_OF]->(c:Class)-[:SESSION_OF]->(c1)
+        WITH c1, fields, prereqs, children,
+        collect(DISTINCT { class_days: c.days, class_start_time: c.start_time,  class_end_time: c.end_time,
+        professor_name: p.name, professor_rating: p.rating })[0..3] AS sessions
+        RETURN c1.credits AS course_credits, fields, prereqs, children, sessions
         """
 
         result = session.run(query, code=code, number=number)
 
         response = result.single()
 
-        return response
+        return response.data() if response is not None else None
 
 
     def get_co_prereqs_for_course(self, session, prereq_code, prereq_number, course_code, course_number):
@@ -89,36 +99,6 @@ class CourseRepository:
         """
 
         result = session.run(query)
-
-        response = [record.data() for record in result]
-
-        return response
-
-    def get_starter_courses(self, session):
-
-        query = """
-        MATCH(c:Course)
-        WITH c AS c, toInteger(c.number) AS course_number
-        WHERE course_number < 4900 AND NOT ()-[:PREREQUISITE]->(c)
-        RETURN c.code AS code, c.number AS number
-        """
-
-        result = session.run(query)
-
-        response = [record.data() for record in result]
-
-        return response
-
-    def get_starter_course_by_code(self, session, code):
-
-        query = """
-           MATCH(c:Course {code:$code})
-           WITH c AS c, toInteger(c.number) AS course_number
-           WHERE course_number < 4900 AND NOT ()-[:PREREQUISITE]->(c)
-           RETURN c.code AS code, c.number AS number
-           """
-
-        result = session.run(query, code=code)
 
         response = [record.data() for record in result]
 
