@@ -18,9 +18,9 @@ class CourseService:
             course.elective_status,
         )
 
-    def get_course(self, session, code, number):
+    def get_course_details(self, session, code, number):
 
-        return self.repo.get_course(session, code, number)
+        return self.repo.get_course_details(session, code, number)
 
     # def get_prerequisites(self, session, code, number):
     #
@@ -61,14 +61,6 @@ class CourseService:
     def course_exists(self, session, course_code, course_number):
 
         return self.repo.course_exists(session, course_code, course_number)
-
-    def get_starter_courses(self, session):
-
-        return self.repo.get_starter_courses(session)
-
-    def get_starter_courses_by_code(self, session, code):
-
-        return self.repo.get_starter_course_by_code(session, code)
 
     def get_course_edges(self, session, major_name, field):
 

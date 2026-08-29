@@ -47,10 +47,15 @@ class CourseRepository:
         query = """
         OPTIONAL MATCH (m:Major)-[requirement:COURSE_OF]->(c1:Course {code:$code, number:$number})
         OPTIONAL MATCH (c2:Course)-[:PREREQUISITE]->(c1)
+        OPTIONAL MATCH (c2)-[p1:PREREQUISITE_RELATIONSHIP {for_course_code:$code, for_course_number: $number}]->(c4:Course)
         OPTIONAL MATCH (c1)-[:PREREQUISITE]->(c3)
         WITH c1,
         collect(DISTINCT {major_fields: requirement.relationship, major_name: m.name}) AS fields,
-        collect(DISTINCT { prereq_code: c2.code, prereq_number: c2.number, prereq_name: c2.name, prereq_rating: c2.rating}) AS prereqs,
+        collect(DISTINCT {
+            prereq1_code: c2.code, prereq1_number: c2.number, prereq1_name: c2.name, prereq1_rating: c2.rating,
+            prereq2_code: c4.code, prereq2_number: c4.number, prereq2_name: c4.name, prereq2_rating: c4.rating,
+            relationship: p1.relationship
+        }) AS prereqs,
         collect(DISTINCT { child_code: c3.code,  child_number: c3.number,  child_name: c3.name, child_rating: c3.rating}) AS children
         MATCH (p:Professor)-[:PROFESSOR_OF]->(c:Class)-[:SESSION_OF]->(c1)
         WITH c1, fields, prereqs, children,

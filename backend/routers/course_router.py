@@ -27,12 +27,6 @@ def create_course(course: CourseCreate):
     with db.get_session() as session:
         service.create_course(session, course)
 
-@router.get("/courses/subject-tree/{course_code}")
-def get_course_tree(course_code: str):
-
-    with db.get_session() as session:
-        return logic.get_course_tree(session, course_code)
-
 
 @router.get("/courses/codes")
 def get_codes():
@@ -54,13 +48,13 @@ def get_co_prereq_edges(major_name: str, field: str):
         return service.get_co_prereq_edges(session, major_name, field)
 
 @router.get("/courses/{course_code}/{course_number}")
-def get_course(course_code, course_number):
+def get_course_details(course_code, course_number):
 
     if not course_exists(course_code, course_number):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found!")
 
     with db.get_session() as session:
-        course = service.get_course(session, course_code, course_number)
+        course = service.get_course_details(session, course_code, course_number)
 
     return course
 
