@@ -12,9 +12,23 @@ interface SimNode extends SimulationNodeDatum {
     anchorY: number;
 }
 
-// CourseNode is a fixed 150px wide, so the collision radius matches that
-// rather than scaling with label length.
-const NODE_RADIUS = 80;
+// CourseNode's rendered footprint varies with its content, so collision
+// radius is derived per-node from its actual measured width/height (set by
+// React Flow once it has laid the node out) rather than a fixed value.
+// Before a node has been measured, fall back to its unresized on-screen
+// size so the initial layout pass still has something reasonable to work
+// with.
+const FALLBACK_WIDTH = 150;
+const FALLBACK_HEIGHT = 80;
+
+// The collision circle is the node's bounding-circle radius (half the
+// diagonal of its measured box), which guarantees the rectangles can't
+// visually overlap regardless of aspect ratio.
+function getNodeRadius(n: CourseNodeProps): number {
+    const width = n.measured?.width ?? FALLBACK_WIDTH;
+    const height = n.measured?.height ?? FALLBACK_HEIGHT;
+    return Math.hypot(width, height) / 2;
+}
 // The x anchor is weak so overlapping nodes can spread out sideways; the y
 // anchor is strong so dagre's rank (prerequisite depth) stays intact instead
 // of drifting into other ranks as a side effect of collision resolution.
@@ -56,7 +70,7 @@ export function useCollisionSimulation(
             id: n.id,
             x: n.position.x,
             y: n.position.y,
-            radius: NODE_RADIUS,
+            radius: getNodeRadius(n),
             anchorX: n.position.x,
             anchorY: n.position.y,
         }));
@@ -103,6 +117,26 @@ export function useCollisionSimulation(
         // loaded), not on every tick-driven position update.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodeIdsSignature]);
+
+    // Keyed on measured sizes (not positions), so this only re-runs when a
+    // node's actual rendered footprint changes - e.g. once React Flow
+    // measures it for the first time, or it resizes - and not on every
+    // tick-driven position update from the simulation itself.
+    const nodeDimensionsSignature = nodeProps
+        .map((n) => `${n.id}:${n.measured?.width ?? ''}x${n.measured?.height ?? ''}`)
+        .join('|');
+
+    useEffect(() => {
+        const simulation = simulationRef.current;
+        if (!simulation) return;
+        for (const n of nodeProps) {
+            const sim = simNodesRef.current.get(n.id);
+            if (sim) sim.radius = getNodeRadius(n);
+        }
+        simulation.force('collide', forceCollide<SimNode>((d) => d.radius));
+        simulation.alpha(Math.max(simulation.alpha(), 0.3)).restart();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [nodeDimensionsSignature]);
 
     const onNodeDragStart: OnNodeDrag = useCallback((_event, node) => {
         const sim = simNodesRef.current.get(node.id);

@@ -75,7 +75,7 @@ function App() {
 
 
    useEffect(() => {
-     if (majors.length === 0) return;
+     if (majors.length === 0 || fields.length === 0) return;
      fetchCourseEdges(majors[majorIndex], fields[fieldIndex])
        .then((edges) => {
            setNodeProps(getNodeProps(edges));

@@ -59,6 +59,9 @@ export class CourseNodeData {
         position: { x: number; y: number };
         data: CourseData;
         style?: CSSProperties;
+        // Populated by React Flow (via onNodesChange 'dimensions' changes)
+        // once the node has actually been rendered and measured.
+        measured?: { width?: number; height?: number };
     }
 
 export function CourseNode(
