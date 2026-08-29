@@ -102,7 +102,7 @@ function App() {
     <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100vw', height: '100vh', alignItems: 'center' }}>
       <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} height={'60px'} background={'#1e293b'} fontColor={'#ffffff'} />
         <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
-        <div id='graph-container' style={{ position: 'relative', flex: '1', width: '90vw', height: '90vh' }}>
+        <div id='graph-container' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flex: '1', width: '90vw', height: '90vh' }}>
         <ReactFlowProvider>
           <Flow
             nodeProps={nodeProps}
