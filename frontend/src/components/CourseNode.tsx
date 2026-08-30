@@ -141,7 +141,7 @@ export function CourseNode(
                 cursor: 'grab', alignItems: 'center',
                 backgroundColor: 'white', justifyContent: 'center',
                 outline: '2px solid #414141',
-            }} animate={{ height: opened ? 150 : 100, scale: opened ? 1.06 : 1 }}
+            }} animate={{ height: opened ? 180 : 110, scale: opened ? 1.06 : 1 }}
                onHoverStart={ () => {
                    setOpened(true);
                    updateNode(id, (node) => ({ style: { ...node.style, zIndex: HOVER_Z_INDEX } }));
@@ -152,7 +152,7 @@ export function CourseNode(
                        const { zIndex: _zIndex, ...style } = node.style ?? {};
                        return { style };
                    });
-               } } >
+               }} >
 
 
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
@@ -166,7 +166,7 @@ export function CourseNode(
                     </div>
                 </div>
             {opened && courseDetails && (
-                <motion.div style={{ alignItems: 'center' , justifyContent: 'center' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
+                <motion.div style={{ alignItems: 'center', justifyContent: 'center' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
                     <button style={{width: '100%', height: '35px', borderRadius: '16px', border: '1px solid #E4E4E4', backgroundColor: '#F5F5F5', cursor: 'pointer', fontWeight: '500'}} onClick={ () => setDetailMode?.(true) }>More Details</button>
                 </motion.div>
                     )}
