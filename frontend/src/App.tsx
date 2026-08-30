@@ -3,6 +3,7 @@ import '@xyflow/react/dist/style.css';
 import './App.css';
 
 import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields } from './api/courses';
+import { LoginPanel } from './components/LoginPanel';
 import { Header } from './components/Header';
 import { CourseNode } from './components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from './components/CourseEdge';
@@ -52,6 +53,7 @@ function App() {
   const [fieldIndex, setFieldIndex] = useState(0);
   const [codeIndex, setCodeIndex] = useState(0);
   const [detailMode, setDetailMode] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setDetailMode={setDetailMode}/>}), [setDetailMode]);
   const edgeTypes = { courseEdge : CourseEdge, coprereqEdge : CoPrereqEdge };
@@ -108,7 +110,10 @@ function App() {
   const { onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick } = useCollisionSimulation(visibleNodeProps, setNodeProps);
 
   return (
-        <div id='body-container' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '0', left: '0', width: '100vw', height: '100vh' }}>
+    <>
+   {!loggedIn && (<LoginPanel setLoggedIn={setLoggedIn} />)}
+        { loggedIn && (
+            <div id='body-container' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '0', left: '0', width: '100vw', height: '100vh' }}>
 
              <div id='sidebar' style={{ height: '100%', flex: '0.125', backgroundColor: '#ffffff'}}>PLACEHOLDER</div>
             <div id='graph-container' style={{ display: 'flex', flexDirection: 'column', flex: '0.875', alignItems: 'center', width: '100%', height: '100%' }}>
@@ -132,7 +137,8 @@ function App() {
                 </ReactFlowProvider>
 
         </div>
-    </div>
+    </div> )}
+    </>
   );
 }
 
