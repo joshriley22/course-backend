@@ -9,49 +9,51 @@ function courseKey(code: string, number: string): string {
     return `${code}${number}`;
 }
 
-//claude had this really element find-union structure answer but I felt bad about outsourcing the logic (let's call it 'refactoring for readability') so I did this
+function courseFromPrereq(prereq: PrerequisiteRelationship, index : number) : string {
+    if( index === 0) {
+        return `${prereq.prereq1_name} (${prereq.prereq1_code} ${prereq.prereq1_number})`;
+        }
+    else if (index === 1){
+        return `${prereq.prereq2_name} (${prereq.prereq2_code} ${prereq.prereq2_number})`;
+        }
+    }
+
+//claude had this really elegant find-union structure answer but I felt bad about outsourcing the logic (let's call it 'refactoring for readability') so I did this
 function formatPrerequisites(prereqs: PrerequisiteRelationship[]): string {
-    const courses = prereqSet(prereqs);
-    return getPrereqsAsString(courses, prereqs);
-    }
-
-function prereqSet(prereqs: PrerequisiteRelationship[]): Set<string> {
-    const courseSet = new Set<string>;
-    for(const prereq of prereqs) {
-            if(prereq.prereq1_code) {
-                courseSet.add(`${prereq.prereq1_code} ${prereq.prereq1_number}`);
+        if(prereqs.length === 0 || prereqs === null) return '';
+        let course = courseFromPrereq(prereqs[0], 0);
+        const courseList = [course];
+        const courseQueue = [course];
+        var finalString = course + ' ';
+        while(courseQueue.length > 0) {
+            const nextEdge = searchPrerequisites(courseQueue[0], prereqs);
+                if(nextEdge !== null) {
+                    var nextCourse : string = (courseQueue[0] === courseFromPrereq(nextEdge, 0)) ? courseFromPrereq(nextEdge, 1) : courseFromPrereq(nextEdge, 0);
+                    if(!contains(courseList, nextCourse)) {
+                    finalString += `${nextEdge.relationship} ${nextCourse} `;
+                    courseList.push(nextCourse);
+                    courseQueue.push(nextCourse);
+                    }
+                    }
+                courseQueue.shift();
             }
-            if(prereq.prereq2_code) {
-                courseSet.add(`${prereq.prereq2_code} ${prereq.prereq2_number}`);
-                }
-        }
-    return courseSet;
+        return finalString;
     }
 
-function getPrereqsAsString(courseSet: Set<string>, prereqs: PrerequisiteRelationship[]) {
-    if(courseSet.size === 0) return 'None';
-    if(courseSet.size === 1) {
-        const [course] = courseSet;
-        return course;
-        }
-
-    let stringResult = '';
-    for(const course of courseSet) {
-            const search = searchPrereqs(prereqs, course);
-
-        }
-    return stringResult;
-    }
-
-function searchPrereqs(prereqs: PrerequisiteRelationship[], prereq: string ) : PrerequisiteRelationship | null {
-    for (const course of prereqs) {
-        if(course.prereq1_code) {
-            if(`${course.prereq1_code} ${course.prereq1_number}` === prereq) {
-                if(course.prereq2_code) return course;
+function searchPrerequisites(course: string, prereqs: PrerequisiteRelationship[]): PrerequisiteRelationship | null {
+        for(const p of prereqs) {
+            if((courseFromPrereq(p, 0) === course || courseFromPrereq(p, 1) === course) && p.relationship) {
+                return p;
                 }
             }
+        return null;
+    }
+
+function contains(arr: string[], target: string): boolean {
+    for(const item of arr) {
+        if(item === target) return true;
         }
-    return null;
+    return false;
     }
 
 export class CourseNodeData {
@@ -104,13 +106,14 @@ export class CourseNodeData {
         data: CourseData;
         style?: CSSProperties;
         measured?: { width?: number; height?: number };
+        setDetailMode?: (detailMode: boolean) => void;
     }
 
 
 const HOVER_Z_INDEX = 1000;
 
 export function CourseNode(
-    { id, data }: CourseNodeProps) {
+    { id, data, setDetailMode }: CourseNodeProps) {
     const { code, number, name, rating } = data;
     const ANIMATION_DURATION = 0.2;
 
@@ -124,6 +127,8 @@ export function CourseNode(
         .then((info) => setCourseDetails(info))
         .catch(console.error);
         }, [code, number, opened]);
+
+    if(courseDetails) console.log(formatPrerequisites(courseDetails.prerequisites));
 
     return (
         <div
@@ -162,7 +167,7 @@ export function CourseNode(
                 </div>
             {opened && courseDetails && (
                 <motion.div style={{ alignItems: 'center' , justifyContent: 'center' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
-                    <button style={{width: '100%', height: '35px', borderRadius: '16px', border: '1px solid #E4E4E4', backgroundColor: '#F5F5F5', cursor: 'pointer', fontWeight: '500'}}>More Details</button>
+                    <button style={{width: '100%', height: '35px', borderRadius: '16px', border: '1px solid #E4E4E4', backgroundColor: '#F5F5F5', cursor: 'pointer', fontWeight: '500'}} onClick={ () => setDetailMode?.(true) }>More Details</button>
                 </motion.div>
                     )}
                 </motion.div>
