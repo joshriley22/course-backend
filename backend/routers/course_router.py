@@ -63,6 +63,9 @@ def get_courses_by_code(course_code):
     with db.get_session() as session:
         courses = service.get_courses_by_code(session, course_code)
 
+    if(not courses):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course(s) not found!")
+
     return courses
 
 @router.get("/courses/{course_code}/{course_number}/co-prereqs")
