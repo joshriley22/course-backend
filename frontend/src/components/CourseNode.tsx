@@ -20,7 +20,7 @@ function courseFromPrereq(prereq: PrerequisiteRelationship, index : number) : st
 
 //claude had this really elegant find-union structure answer but I felt bad about outsourcing the logic (let's call it 'refactoring for readability') so I did this
 function formatPrerequisites(prereqs: PrerequisiteRelationship[]): string {
-        if(prereqs.length === 0 || prereqs === null) return '';
+        if(prereqs.length < 2 || prereqs === null) return '';
         let course = courseFromPrereq(prereqs[0], 0);
         const courseList = [course];
         const courseQueue = [course];
