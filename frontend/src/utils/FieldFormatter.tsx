@@ -17,6 +17,7 @@ export function formatFields(fieldList: string[]) : string[] {
                 break;
             default:
                 formattedList.push(field);
+                break;
             }
         }
         return formattedList;
