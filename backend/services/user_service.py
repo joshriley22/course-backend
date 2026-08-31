@@ -5,6 +5,10 @@ class UserService:
     def __init__(self):
         self.repo = UserRepository()
 
-    def validate_user(self, session, username, password):
+    def get_user(self, session, username):
 
-        return self.repo.validate_user(session, username, password)
+        return self.repo.get_user(session, username)
+
+    def create_user(self, session, username, password):
+
+        return self.repo.create_user(session, username, password)
