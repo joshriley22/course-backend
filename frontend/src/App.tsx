@@ -7,12 +7,14 @@ import { LoginPanel } from './components/LoginPanel';
 import { Header } from './components/Header';
 import { CourseNode } from './components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from './components/CourseEdge';
+import type {FieldDetails, CourseData, CourseDetails} from './types';
 import { getNodeProps } from './utils/NodeInitializer';
 import { getEdgesProps } from './utils/EdgeInitializer';
 import { formatFields } from './utils/FieldFormatter';
+import {  formatPrerequisites } from './utils/PrerequisiteFormatter';
 import { useCollisionSimulation } from './utils/useCollisionSimulation';
 import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges } from '@xyflow/react';
-import { motion } from 'framer-motion';
+import { motion, MotionConfig } from 'framer-motion';
 
 function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick }) {
   const { fitView } = useReactFlow();
@@ -52,10 +54,11 @@ function App() {
   const [majorIndex, setMajorIndex] = useState(0);
   const [fieldIndex, setFieldIndex] = useState(0);
   const [codeIndex, setCodeIndex] = useState(0);
+  const [nodeInfo, setNodeInfo] = useState<CourseDetails | null>(null);
   const [detailMode, setDetailMode] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
 
-  const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setDetailMode={setDetailMode}/>}), [setDetailMode]);
+  const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setNodeInfo={setNodeInfo} detailMode={detailMode} setDetailMode={setDetailMode}/>}), [setNodeInfo, detailMode, setDetailMode]);
   const edgeTypes = { courseEdge : CourseEdge, coprereqEdge : CoPrereqEdge };
 
   const onNodesChange = useCallback((changes) => setNodeProps((nds) => applyNodeChanges(changes, nds)),
@@ -95,16 +98,14 @@ function App() {
     () => Array.from(new Set(nodeProps.map((n) => n.data.code))).sort(),
     [nodeProps],
   );
-  const showCodeHeader = codes.length >= 5;
-
   const visibleNodeProps = useMemo(
-    () => (showCodeHeader ? nodeProps.filter((n) => n.data.code === codes[codeIndex]) : nodeProps),
-    [nodeProps, showCodeHeader, codes, codeIndex],
+    () => (codes.length >= 5 ? nodeProps.filter((n) => n.data.code === codes[codeIndex]) : nodeProps),
+    [nodeProps, codes, codeIndex],
   );
   const visibleNodeIds = useMemo(() => new Set(visibleNodeProps.map((n) => n.id)), [visibleNodeProps]);
   const visibleEdgeProps = useMemo(
-    () => (showCodeHeader ? edgeProps.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)) : edgeProps),
-    [edgeProps, showCodeHeader, visibleNodeIds],
+    () => (codes.length >= 5 ? edgeProps.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)) : edgeProps),
+    [edgeProps, codes, visibleNodeIds],
   );
 
   const { onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick } = useCollisionSimulation(visibleNodeProps, setNodeProps);
@@ -119,7 +120,7 @@ function App() {
             <div id='graph-container' style={{ display: 'flex', flexDirection: 'column', flex: '0.875', alignItems: 'center', width: '100%', height: '100%' }}>
                   <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} height={'60px'} background={'#1e293b'} fontColor={'#ffffff'} />
                   <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
-                  {showCodeHeader && (
+                  {codes.length >= 5 && (
                     <Header codes={codes} currentIndex={codeIndex} onPrev={() => handlePrev(setCodeIndex, codes)} onNext={() => handleNext(setCodeIndex, codes)} height={'40px'} background={'#f1f5f9'} fontColor={'#1e293b'}/>
                   )}
                   <ReactFlowProvider>
@@ -135,8 +136,21 @@ function App() {
                         layoutTick={layoutTick}
                       />
                 </ReactFlowProvider>
-
         </div>
+        { detailMode && nodeInfo != null && (
+            <MotionConfig transition={{ ease: 'easeInOut', duration: '0.4' }}>
+            <motion.div style={{width: '30%', height: '100%', position: 'absolute', top: '105px', right:'-30%', backgroundColor: '#ffffff', zOrder: '1000'}} initial={{ opacity: 1}} animate={{ opacity: 1, x: '-100%' }}>
+                <h1>{nodeInfo?.name}</h1>
+                <h2>{nodeInfo?.code} {nodeInfo?.number}</h2>
+                <p>Credits: {nodeInfo?.credits}</p>
+                <p>Satisfies: {nodeInfo?.fields.map((field : FieldDetails) => `${field.field.charAt(0).toUpperCase() + field.field.slice(1)} for ${field.major_name}`).join(', ')}</p>
+                <p>Prerequisites: {formatPrerequisites(nodeInfo?.prerequisites)}</p>
+                <p>Children: {nodeInfo?.children.map((child : CourseData) => `${child.code} ${child.number}`).join(', ')}</p>
+                <button>Create Review</button>
+                <button onClick={() => {setDetailMode(false); setNodeInfo(null)}}>Close</button>
+            </motion.div>
+            </MotionConfig>
+            )}
     </div> )}
     </>
   );

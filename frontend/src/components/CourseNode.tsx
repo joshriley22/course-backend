@@ -5,57 +5,6 @@ import { motion, MotionConfig } from 'framer-motion';
 import { fetchCourseInfo } from '../api/courses.ts';
 import type { CourseData, CourseDetails, PrerequisiteRelationship } from '../types';
 
-function courseKey(code: string, number: string): string {
-    return `${code}${number}`;
-}
-
-function courseFromPrereq(prereq: PrerequisiteRelationship, index : number) : string {
-    if( index === 0) {
-        return `${prereq.prereq1_name} (${prereq.prereq1_code} ${prereq.prereq1_number})`;
-        }
-    else if (index === 1){
-        return `${prereq.prereq2_name} (${prereq.prereq2_code} ${prereq.prereq2_number})`;
-        }
-    }
-
-//claude had this really elegant find-union structure answer but I felt bad about outsourcing the logic (let's call it 'refactoring for readability') so I did this
-function formatPrerequisites(prereqs: PrerequisiteRelationship[]): string {
-        if((prereqs.length === 1 && !prereqs[0].prereq1_code) || prereqs === null) return '';
-        let course = courseFromPrereq(prereqs[0], 0);
-        const courseList = [course];
-        const courseQueue = [course];
-        var finalString = course + ' ';
-        while(courseQueue.length > 0) {
-            const nextEdge = searchPrerequisites(courseQueue[0], prereqs);
-                if(nextEdge !== null) {
-                    var nextCourse : string = (courseQueue[0] === courseFromPrereq(nextEdge, 0)) ? courseFromPrereq(nextEdge, 1) : courseFromPrereq(nextEdge, 0);
-                    if(!contains(courseList, nextCourse)) {
-                    finalString += `${nextEdge.relationship} ${nextCourse} `;
-                    courseList.push(nextCourse);
-                    courseQueue.push(nextCourse);
-                    }
-                    }
-                courseQueue.shift();
-            }
-        return finalString;
-    }
-
-function searchPrerequisites(course: string, prereqs: PrerequisiteRelationship[]): PrerequisiteRelationship | null {
-        for(const p of prereqs) {
-            if((courseFromPrereq(p, 0) === course || courseFromPrereq(p, 1) === course) && p.relationship) {
-                return p;
-                }
-            }
-        return null;
-    }
-
-function contains(arr: string[], target: string): boolean {
-    for(const item of arr) {
-        if(item === target) return true;
-        }
-    return false;
-    }
-
 export class CourseNodeData {
 
     code: string;
@@ -106,29 +55,30 @@ export class CourseNodeData {
         data: CourseData;
         style?: CSSProperties;
         measured?: { width?: number; height?: number };
-        setDetailMode?: (detailMode: boolean) => void;
+        setNodeInfo?: (nodeInfo: CourseDetails) => void;
+        detailMode : boolean;
+        setDetailMode : (detailMode: boolean) => void;
     }
 
 
 const HOVER_Z_INDEX = 1000;
 
 export function CourseNode(
-    { id, data, setDetailMode }: CourseNodeProps) {
+    { id, data, setNodeInfo, detailMode, setDetailMode }: CourseNodeProps) {
     const { code, number, name, rating } = data;
     const ANIMATION_DURATION = 0.2;
 
     const [opened, setOpened] = useState<boolean>(false);
     const { updateNode } = useReactFlow();
-    const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
 
-    useEffect(() => {
-        if(!opened) return;
-        fetchCourseInfo(code, number)
-        .then((info) => setCourseDetails(info))
-        .catch(console.error);
-        }, [code, number, opened]);
-
-    if(courseDetails) console.log(formatPrerequisites(courseDetails.prerequisites));
+    const loadCourseInfo = async (code: string, number: string) => {
+        try {
+            const info = await fetchCourseInfo(code, number);
+            setNodeInfo?.(info);
+            } catch(err) {
+                console.error('Failed to retrieve course info');
+                }
+        }
 
     return (
         <div
@@ -138,10 +88,11 @@ export function CourseNode(
             <motion.div style={{
                 display: 'flex', position: 'relative', borderRadius: '24px',
                 width: '250px',
-                cursor: 'grab', alignItems: 'center',
-                backgroundColor: 'white', justifyContent: 'center',
+                cursor: 'grab', flexDirection: 'column', alignItems: 'stretch',
+                backgroundColor: 'white', justifyContent: 'flex-start',
                 outline: '2px solid #414141',
-            }} animate={{ height: opened ? 180 : 110, scale: opened ? 1.06 : 1 }}
+                transformOrigin: 'top',
+            }} animate={{ height: opened ? 150 : 110, scale: opened ? 1.06 : 1 }}
                onHoverStart={ () => {
                    setOpened(true);
                    updateNode(id, (node) => ({ style: { ...node.style, zIndex: HOVER_Z_INDEX } }));
@@ -156,18 +107,18 @@ export function CourseNode(
 
 
             <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
-            <motion.div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px', position: 'absolute', padding: '15px', top: '0', zIndex: 200, fontWeight: 500, fontSize: '16px' }} animate={{ y: opened ? 10 : 0 }}>
-                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '15px' }}>
-                    <div id='course-title' style={{textAlign: 'left'}}>
+            <motion.div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap:'15px', padding: '15px', flex: '1', zIndex: '200', fontWeight: '500', fontSize: '16px' }}>
+                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div id='course-title' style={{textAlign: 'left'}} >
                         <span>{name}<br></br>({code} {number})</span>
                     </div>
                     <div id='course-rating' style={{flexShrink: '0', textAlign: 'right'}}>
                         <span>{rating}/5</span>
                     </div>
                 </div>
-            {opened && courseDetails && (
+            {opened && (
                 <motion.div style={{ alignItems: 'center', justifyContent: 'center' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
-                    <button style={{width: '100%', height: '35px', borderRadius: '16px', border: '1px solid #E4E4E4', backgroundColor: '#F5F5F5', cursor: 'pointer', fontWeight: '500'}} onClick={ () => setDetailMode?.(true) }>More Details</button>
+                    <button style={{width: '100%', height: '35px', borderRadius: '16px', border: '1px solid #E4E4E4', backgroundColor: '#F5F5F5', cursor: 'pointer', fontWeight: '500'}} onClick={ () => {setDetailMode(true), loadCourseInfo(code, number)} }>More Details</button>
                 </motion.div>
                     )}
                 </motion.div>
