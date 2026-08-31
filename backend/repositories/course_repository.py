@@ -61,7 +61,7 @@ class CourseRepository:
         WITH c1, fields, prereqs, children,
         collect(DISTINCT { class_days: c.days, class_start_time: c.start_time,  class_end_time: c.end_time,
         professor_name: p.name, professor_rating: p.rating })[0..3] AS sessions
-        RETURN c1.credits AS course_credits, fields, prereqs, children, sessions
+        RETURN c1.name AS course_name, c1.code AS course_code, c1.number AS course_number, c1.credits AS course_credits, fields, prereqs, children, sessions
         """
 
         result = session.run(query, code=code, number=number)

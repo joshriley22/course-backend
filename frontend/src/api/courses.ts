@@ -55,8 +55,8 @@ export async function fetchMajors(): Promise<string[]> {
 export async function fetchFields(major_name: string): Promise<string[]> {
     const res = await fetch(`/majors/${encodeURIComponent(major_name)}/fields`);
     if (!res.ok) throw new Error('Failed to fetch fields');
-    const data: { field: string[] } = await res.json();
-    return data;
+    const data: string[] | null = await res.json();
+    return data ?? [];
     }
 
 export async function fetchCourseInfo(code: string, number: string): Promise<CourseDetails> {
@@ -66,6 +66,9 @@ export async function fetchCourseInfo(code: string, number: string): Promise<Cou
 
     return {
         credits: data.course_credits,
+        name: data.course_name,
+        number: data.course_number,
+        code: data.course_code,
         fields: data.fields.map((f: any): FieldDetails => ({
             major_name: f.major_name,
             field: f.major_fields,
