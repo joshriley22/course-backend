@@ -15,6 +15,8 @@ export function formatFields(fieldList: string[]) : string[] {
             case 'integration':
                 formattedList.push('Integration Electives');
                 break;
+            default:
+                formattedList.push(field);
             }
         }
         return formattedList;
