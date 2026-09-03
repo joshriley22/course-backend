@@ -7,15 +7,13 @@ import { LoginPanel } from './components/LoginPanel';
 import { Header } from './components/Header';
 import { CourseNode } from './components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from './components/CourseEdge';
-import { Carousel } from './components/Carousel';
-import type {FieldDetails, CourseData, CourseDetails} from './types';
+import { NodeDetails } from './components/NodeDetails';
+import type {CourseData, CourseDetails} from './types';
 import { getNodeProps } from './utils/NodeInitializer';
 import { getEdgesProps } from './utils/EdgeInitializer';
 import { formatFields } from './utils/FieldFormatter';
-import {  formatPrerequisites } from './utils/PrerequisiteFormatter';
 import { useCollisionSimulation } from './utils/useCollisionSimulation';
 import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges } from '@xyflow/react';
-import { motion, MotionConfig, useAnimate } from 'framer-motion';
 
 function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick }) {
   const { fitView } = useReactFlow();
@@ -58,8 +56,15 @@ function App() {
   const [nodeInfo, setNodeInfo] = useState<CourseDetails | null>(null);
   const [detailMode, setDetailMode] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [coursesTaken, setCoursesTaken] = useState<CourseData[]>([]);
 
-  const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setNodeInfo={setNodeInfo} detailMode={detailMode} setDetailMode={setDetailMode}/>}), [setNodeInfo, detailMode, setDetailMode]);
+  const addToCoursesTaken = useCallback((course: CourseData) => {
+    if (!coursesTaken.some((c) => c.code === course.code && c.number === course.number)) {
+      setCoursesTaken((prev) => [...prev, course]);
+    }
+  }, [coursesTaken]);
+
+  const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setNodeInfo={setNodeInfo} detailMode={detailMode} setDetailMode={setDetailMode} addToCoursesTaken={addToCoursesTaken}/>}), [setNodeInfo, detailMode, setDetailMode, addToCoursesTaken]);
   const edgeTypes = { courseEdge : CourseEdge, coprereqEdge : CoPrereqEdge };
 
   const onNodesChange = useCallback((changes) => setNodeProps((nds) => applyNodeChanges(changes, nds)),
@@ -139,21 +144,7 @@ function App() {
                 </ReactFlowProvider>
         </div>
         { detailMode && nodeInfo != null && (
-            <MotionConfig transition={{ ease: 'easeInOut', duration: '0.4' }}>
-            <motion.div style={{ display: 'flex', flexDirection: 'column', width: '30%', height: '100%', position: 'absolute', top: '105px', right:'30%', backgroundColor: '#ffffff', zOrder: '1000'}} initial={{ opacity: 1}} animate={{ opacity: 1, x: '-100%' }}>
-                <h1>{nodeInfo?.name}</h1>
-                <h2>{nodeInfo?.code} {nodeInfo?.number}</h2>
-                <p>Credits: {nodeInfo?.credits}</p>
-                <p>Satisfies: {nodeInfo?.fields.map((field : FieldDetails) => `${field.field.charAt(0).toUpperCase() + field.field.slice(1)} for ${field.major_name}`).join(', ')}</p>
-                <p>Prerequisites: {formatPrerequisites(nodeInfo?.prerequisites)}</p>
-                <p>Children: {nodeInfo?.children.map((child : CourseData) => `${child.code} ${child.number}`).join(', ')}</p>
-                <div style={{ display: 'flex', justifyContent: 'center'}}>
-                        <Carousel sessions={nodeInfo?.sessions ?? []}/>
-                </div>
-                <button>Create Review</button>
-                <button onClick={() => {setDetailMode(false); setNodeInfo(null)}}>Close</button>
-            </motion.div>
-            </MotionConfig>
+            <NodeDetails nodeInfo={nodeInfo} onClose={() => {setDetailMode(false); setNodeInfo(null)}} />
             )}
     </div> )}
     </>
