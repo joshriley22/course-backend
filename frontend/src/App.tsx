@@ -7,6 +7,7 @@ import { LoginPanel } from './components/LoginPanel';
 import { Header } from './components/Header';
 import { CourseNode } from './components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from './components/CourseEdge';
+import { Carousel } from './components/Carousel';
 import type {FieldDetails, CourseData, CourseDetails} from './types';
 import { getNodeProps } from './utils/NodeInitializer';
 import { getEdgesProps } from './utils/EdgeInitializer';
@@ -14,7 +15,7 @@ import { formatFields } from './utils/FieldFormatter';
 import {  formatPrerequisites } from './utils/PrerequisiteFormatter';
 import { useCollisionSimulation } from './utils/useCollisionSimulation';
 import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges } from '@xyflow/react';
-import { motion, MotionConfig } from 'framer-motion';
+import { motion, MotionConfig, useAnimate } from 'framer-motion';
 
 function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick }) {
   const { fitView } = useReactFlow();
@@ -139,13 +140,16 @@ function App() {
         </div>
         { detailMode && nodeInfo != null && (
             <MotionConfig transition={{ ease: 'easeInOut', duration: '0.4' }}>
-            <motion.div style={{width: '30%', height: '100%', position: 'absolute', top: '105px', right:'-30%', backgroundColor: '#ffffff', zOrder: '1000'}} initial={{ opacity: 1}} animate={{ opacity: 1, x: '-100%' }}>
+            <motion.div style={{ display: 'flex', flexDirection: 'column', width: '30%', height: '100%', position: 'absolute', top: '105px', right:'30%', backgroundColor: '#ffffff', zOrder: '1000'}} initial={{ opacity: 1}} animate={{ opacity: 1, x: '-100%' }}>
                 <h1>{nodeInfo?.name}</h1>
                 <h2>{nodeInfo?.code} {nodeInfo?.number}</h2>
                 <p>Credits: {nodeInfo?.credits}</p>
                 <p>Satisfies: {nodeInfo?.fields.map((field : FieldDetails) => `${field.field.charAt(0).toUpperCase() + field.field.slice(1)} for ${field.major_name}`).join(', ')}</p>
                 <p>Prerequisites: {formatPrerequisites(nodeInfo?.prerequisites)}</p>
                 <p>Children: {nodeInfo?.children.map((child : CourseData) => `${child.code} ${child.number}`).join(', ')}</p>
+                <div style={{ display: 'flex', justifyContent: 'center'}}>
+                        <Carousel sessions={nodeInfo?.sessions ?? []}/>
+                </div>
                 <button>Create Review</button>
                 <button onClick={() => {setDetailMode(false); setNodeInfo(null)}}>Close</button>
             </motion.div>

@@ -41,6 +41,9 @@ export interface PrerequisiteRelationship {
 }
 
 export interface CourseDetails {
+  name: string;
+  code: string;
+  number: string;
   credits: number;
   fields: FieldDetails[];
   prerequisites: PrerequisiteRelationship[];
