@@ -47,4 +47,4 @@ class MajorRepository:
         result = session.run(query, major_name=major_name)
         record = result.single()
 
-        return record["fields"] if record else None
+        return record["fields"] if record and record["fields"] else []
