@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { Sidebar } from '../components/Sidebar';
+import '../App.css';
+import './Login.css';
 
 export function Login() {
 
@@ -41,16 +44,21 @@ export function Login() {
 
     return (
 
-        <div id='login-panel' style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '40%', height: '70%', position: 'absolute', left: '30%', top: '20%', borderRadius: '50px' }}>
-            <span style={{ textSize: '36px', fontWeight: '600' }}>{signUp ? 'Sign Up' : 'Login'}</span>
-            <form method='POST' onSubmit={ signUp ? handleSignUp : handleLogin}>
-                <label>Username:</label>
-                <input type='text' name='username' value={username} onChange={(input) => setUsername(input.target.value)} style={{ display: 'block', margin: '10px 0' }}/>
-                <label>Password:</label>
-                <input type='password' name='password' value={password} onChange={(input) => setPassword(input.target.value)} style={{ display: 'block', margin: '10px 0' }}/>
-                <button type='submit'> {signUp ? 'Sign Up' : 'Log in'} </button>
-            </form>
-            <button id='signup-switch' onClick={ () => setSignUp(!signUp) }>{signUp ? 'Log in' : 'Sign Up'}</button>
+        <div id='body-container' className='flex items-center justify-center viewport-overlay'>
+            <Sidebar />
+            <div id='content-container' className='main-content flex flex-col items-center full-width full-height'>
+                <div id='login-panel' className='login-panel flex flex-col items-center justify-center'>
+                    <span className='login-title'>{signUp ? 'Sign Up' : 'Login'}</span>
+                    <form method='POST' onSubmit={ signUp ? handleSignUp : handleLogin}>
+                        <label>Username:</label>
+                        <input type='text' name='username' value={username} onChange={(input) => setUsername(input.target.value)} className='login-input'/>
+                        <label>Password:</label>
+                        <input type='password' name='password' value={password} onChange={(input) => setPassword(input.target.value)} className='login-input'/>
+                        <button type='submit'> {signUp ? 'Sign Up' : 'Log in'} </button>
+                    </form>
+                    <button id='signup-switch' onClick={ () => setSignUp(!signUp) }>{signUp ? 'Log in' : 'Sign Up'}</button>
+                </div>
+            </div>
         </div>
 );
 }

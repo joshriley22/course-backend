@@ -1,0 +1,33 @@
+.course-node-wrapper {
+  padding: 15px;
+}
+
+.course-node-card {
+  border-radius: 24px;
+  width: 250px;
+  cursor: grab;
+  align-items: stretch;
+  background-color: white;
+  justify-content: flex-start;
+  outline: 2px solid #414141;
+  transform-origin: top;
+}
+
+.course-node-body {
+  gap: 15px;
+  padding: 15px;
+  flex: 1;
+  z-index: 200;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.course-node-details-btn {
+  width: 100%;
+  height: 35px;
+  border-radius: 16px;
+  border: 1px solid #E4E4E4;
+  background-color: #F5F5F5;
+  cursor: pointer;
+  font-weight: 500;
+}

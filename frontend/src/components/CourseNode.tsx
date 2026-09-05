@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { Position, Handle, useReactFlow } from '@xyflow/react';
 import { motion, MotionConfig } from 'framer-motion';
-import { fetchCourseInfo } from '../api/courses.ts';
+import { fetchCourseInfo, fetchCourseUuid } from '../api/courses.ts';
+import { CoursesTakenList } from '../utils/CoursesTakenList.ts';
 import type { CourseData, CourseDetails, PrerequisiteRelationship } from '../types';
+import './CourseNode.css';
 
 export class CourseNodeData {
 
@@ -80,19 +82,21 @@ export function CourseNode(
                 }
         }
 
+    const addCourseToTaken = async (code: string, number: string) => {
+        try {
+            const uuid = await fetchCourseUuid(code, number);
+            CoursesTakenList.getInstance().addCourse(uuid);
+            } catch(err) {
+                console.error('Failed to retrieve course uuid');
+                }
+        }
+
     return (
-        <div
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '15px' }}
-        >
+        <div className='course-node-wrapper flex flex-col items-center justify-center'>
         <MotionConfig transition={{ ease: 'easeOut', duration: ANIMATION_DURATION }}>
-            <motion.div style={{
-                display: 'flex', position: 'relative', borderRadius: '24px',
-                width: '250px',
-                cursor: 'grab', flexDirection: 'column', alignItems: 'stretch',
-                backgroundColor: 'white', justifyContent: 'flex-start',
-                outline: '2px solid #414141',
-                transformOrigin: 'top',
-            }} animate={{ height: opened ? 150 : 110, scale: opened ? 1.06 : 1 }}
+            <motion.div className='course-node-card flex flex-col relative'
+               animate={{ height: opened ? 150 : 110, scale: opened ? 1.06 : 1 }}
+               onClick={ () => addCourseToTaken(code, number) }
                onHoverStart={ () => {
                    setOpened(true);
                    updateNode(id, (node) => ({ style: { ...node.style, zIndex: HOVER_Z_INDEX } }));
@@ -106,23 +110,23 @@ export function CourseNode(
                }} >
 
 
-            <Handle type="target" style={{visibility:'hidden'}} position={Position.Top} />
-            <motion.div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap:'15px', padding: '15px', flex: '1', zIndex: '200', fontWeight: '500', fontSize: '16px' }}>
-                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div id='course-title' style={{textAlign: 'left'}} >
+            <Handle type="target" className='hidden-visibility' position={Position.Top} />
+            <motion.div className='course-node-body flex flex-col justify-between'>
+                <div className='flex flex-row items-center justify-between'>
+                    <div id='course-title' className='text-left' >
                         <span>{name}<br></br>({code} {number})</span>
                     </div>
-                    <div id='course-rating' style={{flexShrink: '0', textAlign: 'right'}}>
+                    <div id='course-rating' className='shrink-0 text-right'>
                         <span>{rating}/5</span>
                     </div>
                 </div>
             {opened && (
-                <motion.div style={{ alignItems: 'center', justifyContent: 'center' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
-                    <button style={{width: '100%', height: '35px', borderRadius: '16px', border: '1px solid #E4E4E4', backgroundColor: '#F5F5F5', cursor: 'pointer', fontWeight: '500'}} onClick={ () => {setDetailMode(true), loadCourseInfo(code, number)} }>More Details</button>
+                <motion.div className='items-center justify-center' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
+                    <button className='course-node-details-btn' onClick={ (e) => {e.stopPropagation(); setDetailMode(true); loadCourseInfo(code, number);} }>More Details</button>
                 </motion.div>
                     )}
                 </motion.div>
-                <Handle type="source" style={{visibility:'hidden'}} position={Position.Bottom} />
+                <Handle type="source" className='hidden-visibility' position={Position.Bottom} />
             </motion.div>
         </MotionConfig>
     </div>

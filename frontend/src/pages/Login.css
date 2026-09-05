@@ -1,0 +1,17 @@
+.login-panel {
+  width: 40%;
+  height: 70%;
+  position: absolute;
+  left: 30%;
+  top: 20%;
+  border-radius: 50px;
+}
+
+.login-title {
+  font-weight: 600;
+}
+
+.login-input {
+  display: block;
+  margin: 10px 0;
+}

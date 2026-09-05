@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, useAnimate } from 'framer-motion';
 import { Session } from './Session';
 import type { ClassDetails } from '../types';
+import './Carousel.css';
 
 const IDS = ['session0', 'session1', 'session2', 'session3', 'session4'];
 
@@ -45,19 +46,19 @@ export function Carousel({ action, sessions }) {
 
 
     return (
-        <div ref={scope} style={{display: 'flex', flexDirection: 'row'}}>
+        <div ref={scope} className='flex flex-row'>
         {IDS.map((id, index) => (
             <motion.div
                 key={id}
                 id={id}
                 initial={initialStates[index]}
-                style={{ height: '100px', width: '125px' }}
+                className='carousel-item'
                 onClick={() => setState(FORWARD)}
             >{id === 'session2' ? (
                 <motion.span
                     animate={{ opacity: showText ? 1 : 0 }}
                     transition={{ duration: showText ? 0.5 : 0 }}
-                >{id}</motion.span>
+                ></motion.span>
                 ) : id}
                 <Session
                     session={getSessionForIndex(index)}

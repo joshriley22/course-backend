@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
 import type { ClassDetails } from '../types';
+import './Session.css';
 
 export function Session({ session, cleared }: { session?: ClassDetails; cleared?: boolean }) {
 
         return (
-            <motion.div style={{ backgroundColor: '#ffffff', border: '1px solid #414141', borderRadius: '25px', height: '100%', width: '100%' }}>
+            <motion.div className='session-card'>
                 {session && (
                     <motion.div
                         animate={{ opacity: cleared ? 0 : 1 }}

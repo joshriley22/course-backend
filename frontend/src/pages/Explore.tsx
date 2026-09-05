@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import '@xyflow/react/dist/style.css';
 import '../App.css';
 
 import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields } from '../api/courses';
 import { Header } from '../components/Header';
+import { Sidebar } from '../components/Sidebar';
 import { CourseNode } from '../components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from '../components/CourseEdge';
 import { NodeDetails } from '../components/NodeDetails';
@@ -111,14 +111,10 @@ export function Explore() {
   return (
     <>
 
-            <div id='body-container' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '0', left: '0', width: '100vw', height: '100vh' }}>
+            <div id='body-container' className='flex items-center justify-center viewport-overlay'>
 
-             <div id='sidebar' style={{ height: '100%', flex: '0.125', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px' }}>
-                <Link to='/'>Home</Link>
-                <Link to='/eligible-next-courses'>Eligible Next Courses</Link>
-                <Link to='/login'>Login</Link>
-             </div>
-            <div id='graph-container' style={{ display: 'flex', flexDirection: 'column', flex: '0.875', alignItems: 'center', width: '100%', height: '100%' }}>
+             <Sidebar />
+            <div id='graph-container' className='main-content flex flex-col items-center full-width full-height'>
                   <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} height={'60px'} background={'#1e293b'} fontColor={'#ffffff'} />
                   <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
                   {codes.length >= 5 && (

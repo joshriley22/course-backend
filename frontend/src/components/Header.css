@@ -1,0 +1,26 @@
+.header-bar {
+  width: 100%;
+  gap: 24px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.header-arrow {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0px 8px;
+  border-radius: 6px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.header-label {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  min-width: 80px;
+  text-align: center;
+}

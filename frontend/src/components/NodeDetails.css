@@ -1,0 +1,9 @@
+.node-details-panel {
+  width: 30%;
+  height: 100%;
+  position: absolute;
+  top: 105px;
+  right: 0;
+  background-color: #ffffff;
+  z-order: 1000;
+}
