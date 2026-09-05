@@ -134,6 +134,17 @@ class CourseRepository:
 
         return response
 
+    def get_course_uuid(self, session, course_code, course_number):
+        query = """
+        MATCH (c:Course {code:$course_code, number:$course_number})
+        RETURN c.uuid AS uuid
+        """
+
+        result = session.run(query, course_code=course_code, course_number=course_number)
+        response = result.single()
+
+        return response["uuid"] if response is not None else None
+
     def course_exists(self, session, course_code, course_number):
         query = """
         OPTIONAL MATCH (c:Course {code:$course_code, number:$course_number})
@@ -190,5 +201,43 @@ class CourseRepository:
 
         return [record.data() for record in result]
 
+    def get_eligible_next_courses(self, session, course_taken_list, elective_list, major_list):
+        query = """
+        MATCH (major:Major)-[:COURSE_OF]->(candidate:Course)
+        WHERE major.name IN $major_list
+          AND NOT candidate.uuid IN $course_taken_list
+          AND NOT EXISTS {
+              MATCH (prereq:Course)-[:PREREQUISITE]->(candidate)
+              WHERE NOT prereq.uuid IN $course_taken_list
+          }
+        WITH DISTINCT candidate
+        OPTIONAL MATCH (candidate)-[:PREREQUISITE]->(next:Course)
+        WITH candidate, COUNT(DISTINCT next) AS next_count
+        OPTIONAL MATCH (:Major)-[e:COURSE_OF]->(candidate)
+        WHERE e.relationship IN $elective_list
+        WITH candidate, next_count, COUNT(DISTINCT e) AS electives_satisfied
+        OPTIONAL MATCH (integration_major:Major)-[i:COURSE_OF {relationship: 'integration'}]->(candidate)
+        WHERE integration_major.name IN $major_list
+        WITH candidate, next_count, electives_satisfied, COUNT(DISTINCT i) > 0 AS integration_satisfied
+        OPTIONAL MATCH (p:Professor)-[:PROFESSOR_OF]->(:Class)-[:SESSION_OF]->(candidate)
+        WITH candidate, next_count, electives_satisfied, integration_satisfied, avg(p.rating) AS avg_professor_rating
+        OPTIONAL MATCH (session:Class)-[:SESSION_OF]->(candidate)
+        WITH candidate, next_count, electives_satisfied, integration_satisfied, avg_professor_rating,
+             collect(DISTINCT {
+                 days: session.days, start_time: session.start_time, end_time: session.end_time,
+                 starts_after_10: CASE WHEN session.start_time > '10.00.00.000000' THEN 1 ELSE 0 END,
+                 ends_before_5: CASE WHEN session.end_time < '17.00.00.000000' THEN 1 ELSE 0 END,
+                 avoids_lunch: CASE WHEN NOT (session.start_time < '14.00.00.000000' AND session.end_time > '12.00.00.000000') THEN 1 ELSE 0 END
+             }) AS sessions
+
+        RETURN candidate.code AS code, candidate.number AS number, candidate.name AS name,
+               candidate.rating AS rating, integration_satisfied,
+               electives_satisfied, avg_professor_rating, next_count, sessions
+        ORDER BY rating DESC, integration_satisfied DESC, electives_satisfied DESC, avg_professor_rating DESC, next_count DESC
+        """
+
+        result = session.run(query, course_taken_list=course_taken_list, elective_list=elective_list, major_list=major_list)
+
+        return [record.data() for record in result]
 
 

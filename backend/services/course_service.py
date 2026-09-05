@@ -62,6 +62,10 @@ class CourseService:
 
         return self.repo.course_exists(session, course_code, course_number)
 
+    def get_course_uuid(self, session, course_code, course_number):
+
+        return self.repo.get_course_uuid(session, course_code, course_number)
+
     def get_course_edges(self, session, major_name, field):
 
         edges = self.repo.get_course_edges(session, major_name, field)
@@ -75,4 +79,8 @@ class CourseService:
     def get_codes(self, session):
 
         return self.repo.get_codes(session)
+
+    def get_eligible_next_courses(self, session, course_taken_list, elective_list, major_list):
+
+        return self.repo.get_eligible_next_courses(session, course_taken_list, elective_list, major_list)
 

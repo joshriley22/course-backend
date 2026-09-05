@@ -3,7 +3,7 @@ from backend.db import db
 import backend.logic.course_logic as logic
 from backend.responses.course import Course
 from backend.services.course_service import CourseService
-from backend.schemas.course_schema import CourseCreate
+from backend.schemas.course_schema import CourseCreate, EligibleNextCoursesRequest
 
 router = APIRouter()
 
@@ -33,6 +33,13 @@ def get_codes():
 
     with db.get_session() as session:
         return service.get_codes(session)
+
+
+@router.post("/courses/eligible-next-courses")
+def get_eligible_next_courses(request: EligibleNextCoursesRequest):
+
+    with db.get_session() as session:
+        return service.get_eligible_next_courses(session, request.course_taken_list, request.elective_list, request.major_list)
 
 
 @router.get("/courses/{major_name}/{field}/edges")
@@ -116,6 +123,17 @@ def create_prereq_rel_edge(course_code: str, course_number: str, prereq1_code: s
         service.create_prereq_rel_edge(session, course_code, course_number, prereq1_code, prereq1_number, prereq2_code, prereq2_number, rel)
 
 
+@router.get("/courses/{course_code}/{course_number}/uuid")
+def get_course_uuid(course_code: str, course_number: str):
+
+    if not course_exists(course_code, course_number):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=course_code + course_number + "not found!")
+
+    with db.get_session() as session:
+        uuid = service.get_course_uuid(session, course_code, course_number)
+
+    return {"uuid": uuid}
+
 @router.get("/courses/{course_code}/{course_number}/children")
 def get_children(course_code: str, course_number: str):
 
@@ -137,16 +155,6 @@ def get_parents(course_code: str, course_number: str):
         parents = service.get_parents(session, course_code, course_number)
 
     return parents
-
-@router.get("/courses/{course_code}/{course_number}/prerequisites")
-def get_prerequisites(course_code: str, course_number: str):
-    if not course_exists(course_code, course_number):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=course_code + course_number + "not found!")
-
-    with db.get_session() as session:
-        prereqs = logic.get_requirements(session, course_code, course_number)
-
-    return prereqs
 
 def get_co_prereqs_for_course(course_code: str, course_number: str, prereq_code: str, prereq_number: str):
 
@@ -170,10 +178,4 @@ def course_exists(course_code: str, course_number: str):
 
     with db.get_session() as session:
         return service.course_exists(session, course_code, course_number)
-
-
-def get_requirements(course_code: str, course_number: str):
-
-    with db.get_session() as session:
-        return logic.get_requirements(session, course_code, course_number)
 
