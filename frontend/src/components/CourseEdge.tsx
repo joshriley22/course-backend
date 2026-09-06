@@ -68,11 +68,29 @@ export interface CourseEdgeProps {
     }
 
 export function CourseEdge(props: EdgeProps) {
-    return <BezierEdge {...props} />;
+    return (
+        <BezierEdge
+            {...props}
+            style={{ stroke: 'var(--gray-500)', strokeWidth: 1.75, ...props.style }}
+            labelStyle={{ fill: 'var(--gray-700)', fontWeight: 700, fontSize: 11 }}
+            labelBgStyle={{ fill: 'var(--gray-0)' }}
+            labelBgPadding={[4, 2]}
+            labelBgBorderRadius={4}
+        />
+    );
 }
 
 export function CoPrereqEdge(props: EdgeProps) {
-    return <StraightEdge {...props} />
+    return (
+        <StraightEdge
+            {...props}
+            style={{ stroke: 'var(--gray-500)', strokeWidth: 1.75, strokeDasharray: '5 4', ...props.style }}
+            labelStyle={{ fill: 'var(--gray-700)', fontWeight: 700, fontSize: 11 }}
+            labelBgStyle={{ fill: 'var(--gray-0)' }}
+            labelBgPadding={[4, 2]}
+            labelBgBorderRadius={4}
+        />
+    );
     }
 
 export function getSourceNode(edge: CourseEdgeData) : CourseNodeData | null {
