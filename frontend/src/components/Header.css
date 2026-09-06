@@ -1,26 +1,74 @@
 .header-bar {
   width: 100%;
-  gap: 24px;
+  gap: 20px;
   flex-shrink: 0;
   user-select: none;
+  position: relative;
+}
+
+.header-bar--major {
+  height: 64px;
+  background: linear-gradient(180deg, var(--blue-700), var(--blue-800));
+  color: var(--gray-0);
+  box-shadow: inset 0 -1px 0 var(--blue-900);
+}
+
+.header-bar--field {
+  height: 46px;
+  background: var(--gray-0);
+  color: var(--blue-700);
+  box-shadow: inset 0 -1px 0 var(--gray-200);
+}
+
+.header-bar--code {
+  height: 40px;
+  background: var(--orange-50);
+  color: var(--orange-700);
+  box-shadow: inset 0 -1px 0 var(--orange-100);
 }
 
 .header-arrow {
   background: none;
   border: none;
-  color: #94a3b8;
-  font-size: 22px;
+  color: currentColor;
+  opacity: 0.55;
   cursor: pointer;
-  padding: 0px 8px;
-  border-radius: 6px;
-  transition: color 0.15s;
-  line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.header-arrow:hover:not(:disabled) {
+  opacity: 1;
+  background-color: currentColor;
+}
+
+.header-arrow:hover:not(:disabled) svg path {
+  stroke: var(--gray-0);
+}
+
+.header-bar--field .header-arrow:hover:not(:disabled) svg path,
+.header-bar--code .header-arrow:hover:not(:disabled) svg path {
+  stroke: var(--gray-0);
+}
+
+.header-arrow:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
 }
 
 .header-label {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  min-width: 80px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  min-width: 120px;
   text-align: center;
+}
+
+.header-bar--major .header-label {
+  font-size: 23px;
 }
