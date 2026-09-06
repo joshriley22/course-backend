@@ -59,6 +59,27 @@ export async function fetchFields(major_name: string): Promise<string[]> {
     return data ?? [];
     }
 
+export async function fetchCourseUuid(code: string, number: string): Promise<string> {
+    const res = await fetch(`/courses/${code}/${number}/uuid`);
+    if (!res.ok) throw new Error('Failed to fetch course uuid');
+    const data: { uuid: string } = await res.json();
+    return data.uuid;
+    }
+
+export async function fetchEligibleNextCourses(courseTakenList: string[], electiveList: string[], majorList: string[]): Promise<any[]> {
+    const res = await fetch('/courses/eligible-next-courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            course_taken_list: courseTakenList,
+            elective_list: electiveList,
+            major_list: majorList,
+        }),
+    });
+    if (!res.ok) throw new Error('Failed to fetch eligible next courses');
+    return res.json();
+}
+
 export async function fetchCourseInfo(code: string, number: string): Promise<CourseDetails> {
     const res = await fetch(`/courses/${code}/${number}`);
     if (!res.ok) throw new Error('Failed to fetch course info');
