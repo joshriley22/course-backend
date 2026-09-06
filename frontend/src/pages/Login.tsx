@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import { setLoggedIn } from '../utils/auth';
 import rotundaLawn from '../assets/uva-lawn-rotunda.jpg';
 import '../App.css';
 import './Login.css';
@@ -26,6 +27,7 @@ export function Login() {
                 password
             });
             if (response.status === 200) {
+                setLoggedIn();
                 navigate('/');
             }
         } catch (error) {
@@ -46,6 +48,7 @@ export function Login() {
                 password
             });
             if (response.status === 201) {
+                setLoggedIn();
                 navigate('/');
             }
         } catch (error) {
