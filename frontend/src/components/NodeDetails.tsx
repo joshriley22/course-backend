@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, MotionConfig } from 'framer-motion';
 import { Carousel } from './Carousel';
 import { CourseMiniGraph } from './CourseMiniGraph';
@@ -9,14 +9,16 @@ import './NodeDetails.css';
 export interface NodeDetailsProps {
     nodeInfo: CourseDetails;
     onClose: () => void;
+    focusSection?: 'reviews';
 }
 
 function capitalize(word: string): string {
     return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
-export function NodeDetails({ nodeInfo, onClose }: NodeDetailsProps) {
+export function NodeDetails({ nodeInfo, onClose, focusSection }: NodeDetailsProps) {
     const [reviewText, setReviewText] = useState('');
+    const reviewSectionRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
@@ -25,6 +27,12 @@ export function NodeDetails({ nodeInfo, onClose }: NodeDetailsProps) {
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [onClose]);
+
+    useEffect(() => {
+        if (focusSection === 'reviews') {
+            reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [focusSection]);
 
     const prereqs = nodeInfo?.prerequisites ?? [];
     const hasPrereqs = prereqs.length > 0 && !!prereqs[0]?.prereq1_code;
@@ -93,7 +101,8 @@ export function NodeDetails({ nodeInfo, onClose }: NodeDetailsProps) {
                         <Carousel sessions={nodeInfo?.sessions ?? []} />
                     </section>
 
-                    <section className='node-details-section'>
+                    <section className='node-details-section' ref={reviewSectionRef}>
+                        <h2>Reviews</h2>
                         <textarea
                             className='node-details-review-input'
                             placeholder='Create review'
