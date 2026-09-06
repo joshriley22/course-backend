@@ -5,7 +5,16 @@
   width: 100%;
 }
 
+#body-container {
+  isolation: isolate;
+}
+
 .tree-wrapper {
   flex: 1;
   overflow: hidden;
+}
+
+.main-content {
+  flex: 0.875;
+  position: relative;
 }
