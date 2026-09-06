@@ -3,31 +3,63 @@
 }
 
 .course-node-card {
-  border-radius: 24px;
+  border-radius: 18px;
   width: 250px;
   cursor: grab;
   align-items: stretch;
-  background-color: white;
+  background-color: var(--gray-50);
   justify-content: flex-start;
-  outline: 2px solid #414141;
+  outline: 1.5px solid var(--blue-100);
+  box-shadow: 0 1px 2px rgba(23, 29, 51, 0.06);
   transform-origin: top;
+  transition: outline-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.course-node-card:hover {
+  outline-color: var(--orange-300);
+  box-shadow: 0 10px 24px rgba(229, 114, 0, 0.14);
 }
 
 .course-node-body {
-  gap: 15px;
-  padding: 15px;
+  gap: 6px;
+  padding: 14px 16px;
   flex: 1;
   z-index: 200;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 15px;
+  color: var(--blue-800);
+}
+
+#course-title span {
+  line-height: 1.35;
+}
+
+.course-rating-row {
+  gap: 8px;
+}
+
+.course-rating-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-600);
+  white-space: nowrap;
 }
 
 .course-node-details-btn {
   width: 100%;
-  height: 35px;
-  border-radius: 16px;
-  border: 1px solid #E4E4E4;
-  background-color: #F5F5F5;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--blue-100);
+  background-color: var(--blue-50);
+  color: var(--blue-700);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 13px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.course-node-details-btn:hover {
+  background-color: var(--blue-700);
+  border-color: var(--blue-700);
+  color: var(--gray-0);
 }
