@@ -33,6 +33,9 @@ export function Carousel({ sessions }: { sessions: ClassDetails[] }) {
         return sessions[dataIndex];
     };
 
+    const handleNext = () => setSessionsIndex(i => (i + 1) % sessions.length);
+    const handlePrev = () => setSessionsIndex(i => (i - 1 + sessions.length) % sessions.length);
+
     useEffect(() => {
         if (state === NO_OPERATION) return;
         const direction = state;
@@ -49,7 +52,7 @@ export function Carousel({ sessions }: { sessions: ClassDetails[] }) {
                 setShowText(true);
                 }).then(() => {
                     if(sessions.length == 0) return;
-                    setSessionsIndex((sessionsIndex + direction + sessions.length) % sessions.length);
+                    direction === FORWARD ? handleNext() : handlePrev();
                     });
         }, [state]);
 
