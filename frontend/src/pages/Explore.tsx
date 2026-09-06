@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import '@xyflow/react/dist/style.css';
 import '../App.css';
 
 import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields } from '../api/courses';
 import { Header } from '../components/Header';
-import { Sidebar } from '../components/Sidebar';
 import { CourseNode } from '../components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from '../components/CourseEdge';
 import { NodeDetails } from '../components/NodeDetails';
@@ -13,7 +13,10 @@ import { getNodeProps } from '../utils/NodeInitializer';
 import { getEdgesProps } from '../utils/EdgeInitializer';
 import { formatFields } from '../utils/FieldFormatter';
 import { useCollisionSimulation } from '../utils/useCollisionSimulation';
-import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges } from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges, Background, BackgroundVariant, Controls } from '@xyflow/react';
+import './Explore.css';
+
+const edgeTypes = { courseEdge: CourseEdge, coprereqEdge: CoPrereqEdge };
 
 function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick }) {
   const { fitView } = useReactFlow();
@@ -39,7 +42,12 @@ function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNod
       onNodeDrag={onNodeDrag}
       onNodeDragStop={onNodeDragStop}
       fitView
-    />
+      minZoom={0.2}
+      maxZoom={1.5}
+    >
+      <Background variant={BackgroundVariant.Dots} gap={26} size={1.5} color="var(--gray-300)" />
+      <Controls showInteractive={false} />
+    </ReactFlow>
   );
 }
 
@@ -57,7 +65,6 @@ export function Explore() {
   const [detailMode, setDetailMode] = useState(false);
 
   const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setNodeInfo={setNodeInfo} detailMode={detailMode} setDetailMode={setDetailMode}/>}), [setNodeInfo, detailMode, setDetailMode]);
-  const edgeTypes = { courseEdge : CourseEdge, coprereqEdge : CoPrereqEdge };
 
   const onNodesChange = useCallback((changes) => setNodeProps((nds) => applyNodeChanges(changes, nds)),
     []);
@@ -110,15 +117,11 @@ export function Explore() {
 
   return (
     <>
-
-            <div id='body-container' className='flex items-center justify-center viewport-overlay'>
-
-             <Sidebar />
             <div id='graph-container' className='main-content flex flex-col items-center full-width full-height'>
-                  <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} height={'60px'} background={'#1e293b'} fontColor={'#ffffff'} />
-                  <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} height={'45px'} background={'#ffffff'} fontColor={'2b2727'}/>
+                  <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} tier='major' />
+                  <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} tier='field' />
                   {codes.length >= 5 && (
-                    <Header codes={codes} currentIndex={codeIndex} onPrev={() => handlePrev(setCodeIndex, codes)} onNext={() => handleNext(setCodeIndex, codes)} height={'40px'} background={'#f1f5f9'} fontColor={'#1e293b'}/>
+                    <Header codes={codes} currentIndex={codeIndex} onPrev={() => handlePrev(setCodeIndex, codes)} onNext={() => handleNext(setCodeIndex, codes)} tier='code' />
                   )}
                   <ReactFlowProvider>
                       <Flow
@@ -134,10 +137,11 @@ export function Explore() {
                       />
                 </ReactFlowProvider>
         </div>
+        <AnimatePresence>
         { detailMode && nodeInfo != null && (
-            <NodeDetails nodeInfo={nodeInfo} onClose={() => {setDetailMode(false); setNodeInfo(null)}} />
+            <NodeDetails key={`${nodeInfo.code}${nodeInfo.number}`} nodeInfo={nodeInfo} onClose={() => setDetailMode(false)} />
             )}
-    </div>
+        </AnimatePresence>
     </>
   );
 }
