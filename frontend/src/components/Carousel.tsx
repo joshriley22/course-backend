@@ -8,8 +8,18 @@ const IDS = ['session0', 'session1', 'session2', 'session3', 'session4'];
 
 const initialStates = [ {x: 0, opacity: 0, scale: 0}, {x: 0, opacity: 0.8, scale: 0.6}, {x: 0, opacity: 1, scale: 1}, {x: 0, opacity: 0.8, scale: 0.6}, {x: 0, opacity: 0, scale: 0} ]
 
-export function Carousel({ action, sessions }) {
+function ArrowIcon({ direction }: { direction: 'prev' | 'next' }) {
+    const d = direction === 'prev' ? 'M12.5 4.5 7 10l5.5 5.5' : 'm7.5 4.5 5.5 5.5-5.5 5.5';
+    return (
+        <svg viewBox='0 0 20 20' width='16' height='16' aria-hidden='true'>
+            <path d={d} fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        </svg>
+    );
+}
+
+export function Carousel({ sessions }: { sessions: ClassDetails[] }) {
     const FORWARD = 1;
+    const BACKWARD = -1;
     const NO_OPERATION = 0;
     const [state, setState] = useState<number>(0);
     const [scope, animate] = useAnimate();
@@ -24,48 +34,67 @@ export function Carousel({ action, sessions }) {
     };
 
     useEffect(() => {
-        if(state == NO_OPERATION) return;
-        if(state == FORWARD) {
+        if (state === NO_OPERATION) return;
+        const direction = state;
+        const shiftX = direction === FORWARD ? '100%' : '-100%';
         setShowText(false);
-        Promise.all([
-            animate(`#${IDS[0]}`, { x: '100%', opacity: 0.8, scale: 0.6 }, { duration: 0.5}),
-            animate(`#${IDS[1]}`, { x: '100%', opacity: 1, scale: 1 }, { duration: 0.5}),
-            animate(`#${IDS[2]}`, { x: '100%', opacity: 0.8, scale: 0.6 }, { duration: 0.5}),
-            animate(`#${IDS[3]}`, { x: '100%', opacity: 0, scale: 0 }, { duration: 0.5}),
-            animate(`#${IDS[4]}`, { x: '100%', opacity: 0, scale: 0 }, { duration: 0.5}),
-            ]).then(() => {
+        Promise.all(
+            IDS.map((id, index) => {
+                const neighbor = initialStates[index + direction] ?? { opacity: 0, scale: 0 };
+                return animate(`#${id}`, { x: shiftX, opacity: neighbor.opacity, scale: neighbor.scale }, { duration: 0.5 });
+            }),
+            ).then(() => {
                 IDS.forEach((id, index) => animate(`#${id}`, initialStates[index], { duration: 0 }));
                 setState(NO_OPERATION);
                 setShowText(true);
                 }).then(() => {
                     if(sessions.length == 0) return;
-                    setSessionsIndex((sessionsIndex + 1) % sessions.length);
+                    setSessionsIndex((sessionsIndex + direction + sessions.length) % sessions.length);
                     });
-            }
         }, [state]);
 
 
+    if (!sessions || sessions.length === 0) {
+        return <p className='carousel-empty'>No scheduled sessions on record.</p>;
+    }
+
+    const canCycle = sessions.length > 1 && state === NO_OPERATION;
+
     return (
-        <div ref={scope} className='flex flex-row'>
-        {IDS.map((id, index) => (
-            <motion.div
-                key={id}
-                id={id}
-                initial={initialStates[index]}
-                className='carousel-item'
+        <div className='carousel-row flex flex-row items-center'>
+            <button
+                type='button'
+                className='carousel-arrow'
+                onClick={() => setState(BACKWARD)}
+                disabled={!canCycle}
+                aria-label='Previous session'
+            >
+                <ArrowIcon direction='prev' />
+            </button>
+            <div ref={scope} className='flex flex-row carousel'>
+            {IDS.map((id, index) => (
+                <motion.div
+                    key={id}
+                    id={id}
+                    initial={initialStates[index]}
+                    className={`carousel-item${index === 0 || index === IDS.length - 1 ? ' carousel-item--edge' : ''}`}
+                >
+                    <Session
+                        session={getSessionForIndex(index)}
+                        cleared={id === 'session2' ? !showText : true}
+                    />
+                </motion.div>
+                ))}
+            </div>
+            <button
+                type='button'
+                className='carousel-arrow'
                 onClick={() => setState(FORWARD)}
-            >{id === 'session2' ? (
-                <motion.span
-                    animate={{ opacity: showText ? 1 : 0 }}
-                    transition={{ duration: showText ? 0.5 : 0 }}
-                ></motion.span>
-                ) : id}
-                <Session
-                    session={getSessionForIndex(index)}
-                    cleared={id === 'session2' ? !showText : true}
-                />
-            </motion.div>
-            ))}
+                disabled={!canCycle}
+                aria-label='Next session'
+            >
+                <ArrowIcon direction='next' />
+            </button>
         </div>
     );
 }

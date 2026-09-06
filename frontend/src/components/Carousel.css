@@ -1,4 +1,50 @@
+.carousel-row {
+  gap: 8px;
+}
+
+.carousel {
+  gap: 6px;
+}
+
 .carousel-item {
-  height: 100px;
-  width: 125px;
+  height: 140px;
+  width: 214px;
+  flex-shrink: 0;
+}
+
+.carousel-item--edge {
+  width: 0;
+  overflow: hidden;
+}
+
+.carousel-arrow {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.carousel-arrow:hover:not(:disabled) {
+  background: var(--gray-200);
+  color: var(--blue-700);
+}
+
+.carousel-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.carousel-empty {
+  font-size: 13px;
+  color: var(--gray-500);
+  font-style: italic;
+  padding: 10px 2px;
 }
