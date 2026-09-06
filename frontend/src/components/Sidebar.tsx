@@ -1,8 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { isLoggedIn } from '../utils/auth';
 import './Sidebar.css';
 
 export function Sidebar({ transparent = false }: { transparent?: boolean }) {
+  const profileTarget = isLoggedIn() ? '/profile' : '/login';
+
   return (
     <motion.div
       id='sidebar'
@@ -13,7 +16,7 @@ export function Sidebar({ transparent = false }: { transparent?: boolean }) {
       }}
       transition={{ duration: 0.35, ease: 'easeInOut' }}
     >
-      <NavLink to='/profile' className={({ isActive }) => `sidebar-profile${isActive ? ' sidebar-profile--active' : ''}`} aria-label='View profile'>
+      <NavLink to={profileTarget} className={({ isActive }) => `sidebar-profile${isActive ? ' sidebar-profile--active' : ''}`} aria-label={isLoggedIn() ? 'View profile' : 'Log in'}>
         <span className='sidebar-avatar'>
           <svg viewBox='0 0 24 24' width='20' height='20' aria-hidden='true'>
             <circle cx='12' cy='8.5' r='3.75' fill='none' stroke='currentColor' strokeWidth='1.75' />
@@ -24,7 +27,6 @@ export function Sidebar({ transparent = false }: { transparent?: boolean }) {
       <nav className='sidebar-nav flex flex-col'>
         <NavLink to='/' end className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link--active' : ''}`}>Home</NavLink>
         <NavLink to='/explore' className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link--active' : ''}`}>Explore Courses</NavLink>
-        <NavLink to='/login' className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link--active' : ''}`}>Login</NavLink>
       </nav>
     </motion.div>
   );
