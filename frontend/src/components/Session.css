@@ -1,7 +1,46 @@
 .session-card {
-  background-color: #ffffff;
-  border: 1px solid #414141;
-  border-radius: 25px;
+  background-color: var(--gray-0);
+  border: 1px solid var(--blue-100);
+  border-radius: 16px;
   height: 100%;
   width: 100%;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.session-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.session-professor {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--blue-800);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-rating-row {
+  gap: 6px;
+}
+
+.session-rating-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-600);
+}
+
+.session-time {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.session-days {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--gray-500);
 }
