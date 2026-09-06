@@ -1,0 +1,23 @@
+.home-page {
+  gap: 20px;
+  padding: 24px;
+  background: linear-gradient(180deg, var(--gray-50), var(--gray-100));
+}
+
+.home-page-main {
+  flex: 1;
+  min-width: 0;
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .home-page {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .course-search-panel {
+    width: 100%;
+    height: 420px;
+  }
+}
