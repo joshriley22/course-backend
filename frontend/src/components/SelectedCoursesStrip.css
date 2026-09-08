@@ -1,0 +1,127 @@
+.selected-courses-strip {
+  flex-shrink: 0;
+  height: 232px;
+  background: var(--gray-0);
+  border-radius: 20px;
+  outline: 1.5px solid var(--blue-100);
+  box-shadow: 0 1px 2px rgba(23, 29, 51, 0.06);
+  overflow: hidden;
+}
+
+.selected-courses-strip-caption {
+  padding: 14px 20px 10px;
+  flex-shrink: 0;
+}
+
+.selected-courses-strip-caption h2 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--blue-900);
+}
+
+.selected-courses-strip-count {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--orange-700);
+  background: var(--orange-50);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.selected-courses-strip-scroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 20px 18px;
+  gap: 12px;
+  scrollbar-color: var(--blue-200) transparent;
+  scrollbar-width: thin;
+}
+
+.selected-courses-strip-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.selected-courses-strip-scroll::-webkit-scrollbar-thumb {
+  background: var(--blue-200);
+  border-radius: 999px;
+}
+
+.selected-courses-strip-empty {
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  border-radius: 14px;
+}
+
+.selected-course-card {
+  position: relative;
+  width: 208px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--orange-50);
+  outline: 1.5px solid var(--orange-200);
+  gap: 8px;
+  cursor: pointer;
+  transition: outline-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.selected-course-card:hover {
+  outline-color: var(--orange-400);
+  box-shadow: 0 8px 18px rgba(229, 114, 0, 0.18);
+}
+
+.selected-course-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: var(--gray-0);
+  color: var(--gray-500);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.selected-course-remove:hover {
+  background: var(--orange-500);
+  color: var(--gray-0);
+}
+
+.selected-course-code {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--orange-700);
+}
+
+.selected-course-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-900);
+  line-height: 1.3;
+  padding-right: 20px;
+}
+
+.selected-course-credits {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--orange-700);
+}
+
+.selected-course-meta {
+  margin-top: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--orange-800);
+}
