@@ -1,0 +1,113 @@
+.course-list-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--gray-0);
+  outline: 1.5px solid var(--blue-100);
+  box-shadow: 0 1px 2px rgba(23, 29, 51, 0.06);
+  gap: 6px;
+  cursor: pointer;
+  transition: outline-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.course-list-item:hover {
+  outline-color: var(--orange-300);
+  box-shadow: 0 8px 18px rgba(229, 114, 0, 0.12);
+}
+
+.course-list-item--selected {
+  outline-color: var(--orange-400);
+  background: var(--orange-50);
+}
+
+.course-list-item-code {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--orange-700);
+  background: var(--orange-50);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+.course-list-item--selected .course-list-item-code {
+  background: var(--gray-0);
+}
+
+.course-list-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-900);
+  line-height: 1.3;
+}
+
+.course-list-item-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.course-list-item-actions {
+  gap: 6px;
+  row-gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.course-list-item-add {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--blue-700);
+  background: var(--blue-700);
+  color: var(--gray-0);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.course-list-item-add:hover {
+  background: var(--blue-800);
+  border-color: var(--blue-800);
+}
+
+.course-list-item-add--active {
+  background: var(--orange-500);
+  border-color: var(--orange-500);
+}
+
+.course-list-item-add--active:hover {
+  background: var(--orange-600);
+  border-color: var(--orange-600);
+}
+
+.course-list-item-add:disabled {
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+.course-list-item-ghost {
+  flex: 0 0 auto;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gray-200);
+  background: var(--gray-0);
+  color: var(--gray-600);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.course-list-item-ghost:hover {
+  border-color: var(--orange-300);
+  color: var(--orange-700);
+}
