@@ -6,7 +6,7 @@ import { WeeklySchedule } from '../components/WeeklySchedule';
 import { SelectedCoursesStrip } from '../components/SelectedCoursesStrip';
 import { CourseSearchPanel } from '../components/CourseSearchPanel';
 import { NodeDetails } from '../components/NodeDetails';
-import { courseKeyOf } from '../utils/ScheduleFormatter';
+import { courseKeyOf, CREDIT_CAP } from '../utils/ScheduleFormatter';
 import type { CourseDetails, EligibleCourse } from '../types';
 import '../App.css';
 import './Home.css';
@@ -41,6 +41,10 @@ export function Home() {
     }, []);
 
     const selectedKeys = useMemo(() => new Set(selectedCourses.map(courseKeyOf)), [selectedCourses]);
+    const totalCredits = useMemo(
+        () => selectedCourses.reduce((sum, c) => sum + (c.credits ?? 0), 0),
+        [selectedCourses],
+    );
 
     const openDetails = useCallback((course: { code: string; number: string }, section?: 'reviews') => {
         setFocusSection(section);
@@ -55,6 +59,8 @@ export function Home() {
             if (prev.some((c) => courseKeyOf(c) === key)) {
                 return prev.filter((c) => courseKeyOf(c) !== key);
             }
+            const currentCredits = prev.reduce((sum, c) => sum + (c.credits ?? 0), 0);
+            if (currentCredits + (course.credits ?? 0) > CREDIT_CAP) return prev;
             return [...prev, course];
         });
     }, []);
@@ -64,9 +70,6 @@ export function Home() {
         setSelectedCourses((prev) => prev.filter((c) => courseKeyOf(c) !== key));
     }, []);
 
-    const scheduleCourses = selectedCourses.length > 0 ? selectedCourses : eligibleCourses;
-    const scheduleTone: 'selected' | 'recommended' = selectedCourses.length > 0 ? 'selected' : 'recommended';
-
     const handleScheduleSelect = useCallback((course: { code: string; number: string }) => openDetails(course), [openDetails]);
 
     return (
@@ -74,13 +77,12 @@ export function Home() {
             <div id='content-container' className='home-page main-content flex flex-row full-width full-height'>
                 <div className='home-page-main flex flex-col'>
                     <WeeklySchedule
-                        courses={scheduleCourses}
-                        tone={scheduleTone}
-                        loading={loading}
+                        courses={selectedCourses}
                         onSelectCourse={handleScheduleSelect}
                     />
                     <SelectedCoursesStrip
                         courses={selectedCourses}
+                        totalCredits={totalCredits}
                         onRemove={handleRemove}
                         onShowDetails={(course) => openDetails(course)}
                     />
@@ -90,6 +92,7 @@ export function Home() {
                     loading={loading}
                     error={error}
                     selectedKeys={selectedKeys}
+                    totalCredits={totalCredits}
                     onToggleSelected={handleToggleSelected}
                     onShowDetails={(course) => openDetails(course)}
                     onShowReviews={(course) => openDetails(course, 'reviews')}
