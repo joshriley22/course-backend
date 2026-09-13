@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import '@xyflow/react/dist/style.css';
 import '../App.css';
 
@@ -13,6 +13,7 @@ import { getNodeProps } from '../utils/NodeInitializer';
 import { getEdgesProps } from '../utils/EdgeInitializer';
 import { formatFields } from '../utils/FieldFormatter';
 import { useCollisionSimulation } from '../utils/useCollisionSimulation';
+import { pageTransition } from '../utils/pageTransition';
 import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges, Background, BackgroundVariant, Controls } from '@xyflow/react';
 import './Explore.css';
 
@@ -117,7 +118,7 @@ export function Explore() {
 
   return (
     <>
-            <div id='graph-container' className='main-content flex flex-col items-center full-width full-height'>
+            <motion.div id='graph-container' className='main-content flex flex-col items-center full-width full-height' {...pageTransition}>
                   <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} tier='major' />
                   <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} tier='field' />
                   {codes.length >= 5 && (
@@ -136,7 +137,7 @@ export function Explore() {
                         layoutTick={layoutTick}
                       />
                 </ReactFlowProvider>
-        </div>
+        </motion.div>
         <AnimatePresence>
         { detailMode && nodeInfo != null && (
             <NodeDetails key={`${nodeInfo.code}${nodeInfo.number}`} nodeInfo={nodeInfo} onClose={() => setDetailMode(false)} />

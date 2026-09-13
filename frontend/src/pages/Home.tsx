@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { fetchEligibleNextCourses, fetchMajors, fetchCourseInfo } from '../api/courses';
 import { CoursesTakenList } from '../utils/CoursesTakenList';
 import { WeeklySchedule } from '../components/WeeklySchedule';
@@ -7,6 +7,7 @@ import { SelectedCoursesStrip } from '../components/SelectedCoursesStrip';
 import { CourseSearchPanel } from '../components/CourseSearchPanel';
 import { NodeDetails } from '../components/NodeDetails';
 import { courseKeyOf, CREDIT_CAP } from '../utils/ScheduleFormatter';
+import { pageTransition } from '../utils/pageTransition';
 import type { CourseDetails, EligibleCourse } from '../types';
 import '../App.css';
 import './Home.css';
@@ -74,7 +75,7 @@ export function Home() {
 
     return (
         <>
-            <div id='content-container' className='home-page main-content flex flex-row full-width full-height'>
+            <motion.div id='content-container' className='home-page main-content flex flex-row full-width full-height' {...pageTransition}>
                 <div className='home-page-main flex flex-col'>
                     <WeeklySchedule
                         courses={selectedCourses}
@@ -97,7 +98,7 @@ export function Home() {
                     onShowDetails={(course) => openDetails(course)}
                     onShowReviews={(course) => openDetails(course, 'reviews')}
                 />
-            </div>
+            </motion.div>
             <AnimatePresence>
                 {detailMode && nodeInfo != null && (
                     <NodeDetails

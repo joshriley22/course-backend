@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { setLoggedIn } from '../utils/auth';
+import { pageTransition } from '../utils/pageTransition';
 import rotundaLawn from '../assets/uva-lawn-rotunda.jpg';
 import '../App.css';
 import './Login.css';
@@ -68,10 +69,7 @@ export function Login() {
         <motion.div
             id='content-container'
             className='main-content login-page flex flex-col items-center justify-center full-width full-height'
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: 'easeInOut' }}
+            {...pageTransition}
         >
             <motion.div
                 className='login-backdrop'
