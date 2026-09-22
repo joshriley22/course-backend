@@ -1,16 +1,20 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     env_file:
-      - backend/.env
-    ports:
-      - "8000:8000"
+      - .env
+    restart: unless-stopped
+    expose:
+      - "8000"
 
   frontend:
-    build: ./frontend
-    environment:
-      VITE_BACKEND_URL: http://backend:8000
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "80:80"
     depends_on:
       - backend
