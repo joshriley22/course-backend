@@ -23,7 +23,7 @@ export function Login() {
         setIsSubmitting(true);
 
         try {
-            const response = await axios.post('http://localhost:8000/users/login', {
+            const response = await axios.post('/users/login', {
                 username,
                 password
             });
@@ -44,7 +44,7 @@ export function Login() {
         setIsSubmitting(true);
 
         try {
-            const response = await axios.post('http://localhost:8000/users/register', {
+            const response = await axios.post('/users/register', {
                 username,
                 password
             });
