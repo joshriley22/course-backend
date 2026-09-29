@@ -7,6 +7,7 @@ function courseFromPrereq(prereq: PrerequisiteRelationship, index : number) : st
     else if (index === 1){
         return `${prereq.prereq2_name} (${prereq.prereq2_code} ${prereq.prereq2_number})`;
         }
+    return '';
     }
 
 //claude had this really elegant find-union structure answer but I felt bad about outsourcing the logic (let's call it 'refactoring for readability') so I did this

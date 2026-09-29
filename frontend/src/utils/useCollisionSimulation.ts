@@ -27,7 +27,7 @@ const FALLBACK_HEIGHT = 100;
 // The collision circle is the node's bounding-circle radius (half the
 // diagonal of its resting box), which guarantees the rectangles can't
 // visually overlap regardless of aspect ratio.
-function getNodeRadius(n: CourseNodeProps): number {
+function getNodeRadius(_n: CourseNodeProps): number {
     const width = NODE_WIDTH;
     return Math.hypot(width, FALLBACK_HEIGHT) / 2;
 }

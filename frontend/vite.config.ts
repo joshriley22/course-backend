@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 const BACKEND_URL = process.env.VITE_BACKEND_URL ?? 'http://localhost:8000'
 
-const backendRoutes = ['/courses', '/classes', '/professors', '/majors']
+const backendRoutes = ['/courses', '/classes', '/professors', '/majors', '/users', '/reviews']
 
 // https://vite.dev/config/
 export default defineConfig({

@@ -22,8 +22,6 @@ export function getPositionsWithNodeProps(nodes : CourseNodeData[], edgeProps: C
 
     dagre.layout(graph);
 
-    const graphCenterX = graph.graph().width! / 2;
-
          return nodes.map((n) => {
         const { x, y } = graph.node(n.string());
         return n.getProps(x - NODE_W / 2, y - NODE_H / 2);

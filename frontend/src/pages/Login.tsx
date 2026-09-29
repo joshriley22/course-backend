@@ -28,7 +28,7 @@ export function Login() {
                 password
             });
             if (response.status === 200) {
-                setLoggedIn();
+                setLoggedIn(username);
                 navigate('/');
             }
         } catch (error) {
@@ -49,7 +49,7 @@ export function Login() {
                 password
             });
             if (response.status === 201) {
-                setLoggedIn();
+                setLoggedIn(username);
                 navigate('/');
             }
         } catch (error) {
