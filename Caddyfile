@@ -1,0 +1,3 @@
+searchcourseuva.com, www.searchcourseuva.com {
+    reverse_proxy frontend:80
+}
