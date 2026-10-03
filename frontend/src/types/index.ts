@@ -50,3 +50,46 @@ export interface CourseDetails {
   children: CourseData[];
   sessions: ClassDetails[];
 }
+
+export interface EligibleCourseSession {
+  days: string;
+  startTime: string;
+  endTime: string;
+  startsAfter10?: boolean;
+  endsBefore5?: boolean;
+  avoidsLunch?: boolean;
+}
+
+export interface EligibleCourse {
+  code: string;
+  number: string;
+  name: string;
+  credits?: number;
+  rating?: number | null;
+  reviewCount?: number;
+  sessions: EligibleCourseSession[];
+}
+
+export interface TakenCourse extends EligibleCourse {
+  uuid: string;
+}
+
+export interface CourseSearchResult {
+  code: string;
+  number: string;
+  name: string;
+  rating?: number | null;
+  credits?: string | number | null;
+}
+
+export interface CourseReview {
+  text: string;
+  rating: number;
+  username: string;
+  created_at?: number | null;
+}
+
+export interface PostedReview extends CourseReview {
+  course_rating: number;
+  review_count: number;
+}
