@@ -1,0 +1,231 @@
+.profile-page {
+  min-width: 0;
+  min-height: 0;
+  gap: 20px;
+  padding: 24px;
+  background: linear-gradient(180deg, var(--gray-50), var(--gray-100));
+}
+
+.profile-welcome {
+  flex: 0 0 30%;
+  min-height: 150px;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 32px;
+  background: var(--gray-0);
+  border-radius: 20px;
+  outline: 1.5px solid var(--blue-100);
+  box-shadow: 0 1px 2px rgba(23, 29, 51, 0.06);
+  overflow: hidden;
+}
+
+.profile-welcome h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--blue-900);
+  overflow-wrap: anywhere;
+}
+
+.profile-majors {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.profile-majors-list {
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+}
+
+.profile-majors-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-600);
+}
+
+.profile-majors-empty {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-400);
+}
+
+.profile-major-chips {
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+}
+
+.profile-major-chip {
+  gap: 8px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 999px;
+  background: var(--blue-50);
+  outline: 1.5px solid var(--blue-100);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-800);
+}
+
+.profile-major-remove {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: var(--gray-0);
+  color: var(--gray-500);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.profile-major-remove:hover {
+  background: var(--orange-500);
+  color: var(--gray-0);
+}
+
+.profile-primary-btn {
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid var(--blue-700);
+  background: var(--blue-700);
+  color: var(--gray-0);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.profile-primary-btn:hover {
+  background: var(--blue-800);
+  border-color: var(--blue-800);
+}
+
+.profile-panel {
+  flex: 1 1 0;
+  min-height: 0;
+  background: var(--gray-0);
+  border-radius: 20px;
+  outline: 1.5px solid var(--blue-100);
+  box-shadow: 0 1px 2px rgba(23, 29, 51, 0.06);
+  overflow: hidden;
+}
+
+.profile-panel-caption {
+  flex-shrink: 0;
+  gap: 12px;
+  padding: 16px 20px 12px 24px;
+}
+
+.profile-panel-caption h2 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--blue-900);
+}
+
+.profile-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 14px;
+  padding: 4px 24px 24px;
+  overflow-y: auto;
+  scrollbar-color: var(--blue-200) transparent;
+  scrollbar-width: thin;
+}
+
+.profile-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.profile-grid::-webkit-scrollbar-thumb {
+  background: var(--blue-200);
+  border-radius: 999px;
+}
+
+.profile-notice {
+  flex-shrink: 0;
+  margin: 0 24px 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--orange-50);
+  color: var(--orange-700);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-grid--message {
+  display: flex;
+}
+
+.profile-course-slot > .course-list-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-empty {
+  flex: 1;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  border-radius: 14px;
+}
+
+.profile-empty--error {
+  color: var(--orange-700);
+  background: var(--orange-50);
+}
+
+.profile-skeleton {
+  height: 150px;
+  border-radius: 14px;
+  background: linear-gradient(100deg, var(--gray-50) 30%, var(--gray-100) 50%, var(--gray-50) 70%);
+  background-size: 200% 100%;
+  animation: profile-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes profile-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (max-width: 1100px) {
+  .profile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .profile-page {
+    overflow-y: auto;
+  }
+
+  .profile-welcome {
+    flex: none;
+    padding: 24px;
+  }
+
+  .profile-panel {
+    flex: none;
+    min-height: 420px;
+  }
+
+  .profile-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
