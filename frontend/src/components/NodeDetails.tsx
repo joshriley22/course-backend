@@ -39,9 +39,9 @@ export function NodeDetails({ nodeInfo, onClose, focusSection }: NodeDetailsProp
     const prereqSummary = hasPrereqs ? formatPrerequisites(prereqs) : 'None on record.';
 
     const children = nodeInfo?.children ?? [];
-    const unlocksSummary = children.length > 0
+    const unlocksSummary = children.length > 0 && children[0].name != null
         ? children.map((c) => `${c.name} (${c.code} ${c.number})`).join(', ')
-        : 'Nothing else requires this course directly.';
+        : 'Nothing requires this course directly.';
 
     return (
         <MotionConfig transition={{ ease: 'easeOut', duration: 0.22 }}>
