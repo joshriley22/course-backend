@@ -1,4 +1,4 @@
-import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship } from '../types';
+import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview } from '../types';
 
 export async function fetchCodes(): Promise<string[]> {
   const res = await fetch('/courses/codes');
@@ -66,7 +66,7 @@ export async function fetchCourseUuid(code: string, number: string): Promise<str
     return data.uuid;
     }
 
-export async function fetchEligibleNextCourses(courseTakenList: string[], electiveList: string[], majorList: string[]): Promise<any[]> {
+export async function fetchEligibleNextCourses(courseTakenList: string[], electiveList: string[], majorList: string[]): Promise<EligibleCourse[]> {
     const res = await fetch('/courses/eligible-next-courses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,6 +77,89 @@ export async function fetchEligibleNextCourses(courseTakenList: string[], electi
         }),
     });
     if (!res.ok) throw new Error('Failed to fetch eligible next courses');
+    const data = await res.json();
+    return data.map((c: any): EligibleCourse => ({
+        code: c.code,
+        number: c.number,
+        name: c.name,
+        rating: c.rating,
+        reviewCount: c.review_count ?? 0,
+        sessions: (c.sessions ?? []).map((s: any) => ({
+            days: s.days,
+            startTime: s.start_time,
+            endTime: s.end_time,
+            startsAfter10: !!s.starts_after_10,
+            endsBefore5: !!s.ends_before_5,
+            avoidsLunch: !!s.avoids_lunch,
+        })),
+    }));
+}
+
+export async function searchCourses(query: string, signal?: AbortSignal): Promise<CourseSearchResult[]> {
+    const res = await fetch(`/courses/search?q=${encodeURIComponent(query)}`, { signal });
+    if (!res.ok) throw new Error('Failed to search courses');
+    return res.json();
+}
+
+export async function fetchTakenCourses(username: string): Promise<TakenCourse[]> {
+    const res = await fetch(`/users/${encodeURIComponent(username)}/courses`);
+    if (!res.ok) throw new Error('Failed to fetch taken courses');
+    const data = await res.json();
+    return data.map((c: any): TakenCourse => {
+        const credits = Number(c.credits);
+        return {
+            uuid: c.uuid,
+            code: c.code,
+            number: c.number,
+            name: c.name,
+            rating: c.rating,
+            reviewCount: c.review_count ?? 0,
+            credits: Number.isFinite(credits) ? credits : undefined,
+            sessions: (c.sessions ?? []).map((s: any) => ({
+                days: s.days,
+                startTime: s.start_time,
+                endTime: s.end_time,
+            })),
+        };
+    });
+}
+
+export async function addTakenCourse(username: string, code: string, number: string): Promise<void> {
+    const res = await fetch(`/users/${encodeURIComponent(username)}/courses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ course_code: code, course_number: number }),
+    });
+    if (!res.ok) throw new Error('Failed to add course');
+}
+
+export async function removeTakenCourse(username: string, code: string, number: string): Promise<void> {
+    const res = await fetch(
+        `/users/${encodeURIComponent(username)}/courses/${encodeURIComponent(code)}/${encodeURIComponent(number)}`,
+        { method: 'DELETE' },
+    );
+    if (!res.ok) throw new Error('Failed to remove course');
+}
+
+export async function fetchCourseReviews(code: string, number: string): Promise<CourseReview[]> {
+    const res = await fetch(`/courses/${encodeURIComponent(code)}/${encodeURIComponent(number)}/reviews`);
+    if (!res.ok) throw new Error('Failed to fetch reviews');
+    return res.json();
+}
+
+export async function postReview(username: string, code: string, number: string, rating: number, text: string): Promise<PostedReview> {
+    const res = await fetch('/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            course_code: code,
+            course_number: number,
+            review_text: text,
+            rating,
+            username,
+        }),
+    });
+    if (!res.ok) throw new Error('Failed to post review');
     return res.json();
 }
 
