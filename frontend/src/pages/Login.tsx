@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { setLoggedIn } from '../utils/auth';
+import { loadTakenCourses } from '../utils/CoursesTakenList';
 import { pageTransition } from '../utils/pageTransition';
 import rotundaLawn from '../assets/uva-lawn-rotunda.jpg';
 import '../App.css';
@@ -29,6 +30,7 @@ export function Login() {
             });
             if (response.status === 200) {
                 setLoggedIn(username);
+                await loadTakenCourses(username).catch(console.error);
                 navigate('/');
             }
         } catch (error) {
