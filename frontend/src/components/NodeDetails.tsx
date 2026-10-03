@@ -1,24 +1,57 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, MotionConfig } from 'framer-motion';
+import { fetchCourseReviews, postReview } from '../api/courses';
 import { Carousel } from './Carousel';
 import { CourseMiniGraph } from './CourseMiniGraph';
+import { StarPicker } from './StarPicker';
+import { StarRating } from './StarRating';
+import { getUsername, isLoggedIn } from '../utils/auth';
 import { formatPrerequisites } from '../utils/PrerequisiteFormatter';
-import type { FieldDetails, CourseDetails } from '../types';
+import type { FieldDetails, CourseDetails, CourseReview } from '../types';
 import './NodeDetails.css';
+
+type ReviewsStatus = 'loading' | 'ready' | 'error';
+type PostStatus = 'idle' | 'posting' | 'posted' | 'error';
+
+export interface ReviewSummary {
+    reviewCount: number;
+    rating: number;
+}
 
 export interface NodeDetailsProps {
     nodeInfo: CourseDetails;
     onClose: () => void;
     focusSection?: 'reviews';
+    onReviewPosted?: (course: { code: string; number: string }, summary: ReviewSummary) => void;
+}
+
+function formatReviewDate(timestamp?: number | null): string {
+    if (!timestamp) return '';
+    return new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function CheckIcon() {
+    return (
+        <svg viewBox='0 0 16 16' width='14' height='14' aria-hidden='true'>
+            <path d='M3 8.5 6.3 12 13 4' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        </svg>
+    );
 }
 
 function capitalize(word: string): string {
     return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
-export function NodeDetails({ nodeInfo, onClose, focusSection }: NodeDetailsProps) {
+export function NodeDetails({ nodeInfo, onClose, focusSection, onReviewPosted }: NodeDetailsProps) {
     const [reviewText, setReviewText] = useState('');
+    const [rating, setRating] = useState(0);
+    const [reviews, setReviews] = useState<CourseReview[]>([]);
+    const [reviewsStatus, setReviewsStatus] = useState<ReviewsStatus>('loading');
+    const [postStatus, setPostStatus] = useState<PostStatus>('idle');
     const reviewSectionRef = useRef<HTMLElement | null>(null);
+    const postFeedbackRef = useRef<HTMLParagraphElement | null>(null);
+    const loggedIn = isLoggedIn();
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
@@ -33,6 +66,52 @@ export function NodeDetails({ nodeInfo, onClose, focusSection }: NodeDetailsProp
             reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }, [focusSection]);
+
+    useEffect(() => {
+        if (postStatus === 'posted' || postStatus === 'error') {
+            postFeedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, [postStatus]);
+
+    useEffect(() => {
+        let cancelled = false;
+        setReviewsStatus('loading');
+        fetchCourseReviews(nodeInfo.code, nodeInfo.number)
+            .then((list) => {
+                if (cancelled) return;
+                setReviews(list);
+                setReviewsStatus('ready');
+            })
+            .catch((err) => {
+                console.error(err);
+                if (!cancelled) setReviewsStatus('error');
+            });
+        return () => { cancelled = true; };
+    }, [nodeInfo.code, nodeInfo.number]);
+
+    const handlePost = async () => {
+        const username = getUsername();
+        if (!username || rating === 0 || postStatus === 'posting') return;
+        setPostStatus('posting');
+        try {
+            const posted = await postReview(username, nodeInfo.code, nodeInfo.number, rating, reviewText.trim());
+            setReviews((prev) => [
+                { text: posted.text, rating: posted.rating, username: posted.username, created_at: posted.created_at },
+                ...prev,
+            ]);
+            setReviewsStatus('ready');
+            setReviewText('');
+            setRating(0);
+            setPostStatus('posted');
+            onReviewPosted?.(
+                { code: nodeInfo.code, number: nodeInfo.number },
+                { reviewCount: posted.review_count, rating: posted.course_rating },
+            );
+        } catch (err) {
+            console.error(err);
+            setPostStatus('error');
+        }
+    };
 
     const prereqs = nodeInfo?.prerequisites ?? [];
     const hasPrereqs = prereqs.length > 0 && !!prereqs[0]?.prereq1_code;
@@ -102,20 +181,76 @@ export function NodeDetails({ nodeInfo, onClose, focusSection }: NodeDetailsProp
                     </section>
 
                     <section className='node-details-section' ref={reviewSectionRef}>
-                        <h2>Reviews</h2>
-                        <textarea
-                            className='node-details-review-input'
-                            placeholder='Create review'
-                            value={reviewText}
-                            onChange={(e) => setReviewText(e.target.value)}
-                        />
-                        <button
-                            type='button'
-                            className='node-details-post-btn'
-                            onClick={() => setReviewText('')}
-                        >
-                            Post
-                        </button>
+                        <h2>Reviews{reviewsStatus === 'ready' && reviews.length > 0 ? ` (${reviews.length})` : ''}</h2>
+
+                        <div className='node-reviews' aria-live='polite'>
+                            {reviewsStatus === 'loading' && <p className='node-reviews-message'>Loading reviews&hellip;</p>}
+                            {reviewsStatus === 'error' && (
+                                <p className='node-reviews-message node-reviews-message--error'>Couldn&rsquo;t load reviews. Try again shortly.</p>
+                            )}
+                            {reviewsStatus === 'ready' && reviews.length === 0 && (
+                                <p className='node-reviews-message'>No reviews yet. Be the first to post one.</p>
+                            )}
+                            {reviewsStatus === 'ready' && reviews.length > 0 && (
+                                <ul className='node-reviews-list'>
+                                    {reviews.map((review, i) => (
+                                        <li key={`${review.username}-${review.created_at ?? i}-${i}`} className='node-review'>
+                                            <div className='node-review-head'>
+                                                <StarRating rating={Number(review.rating ?? 0)} size={14} />
+                                                <span className='node-review-meta'>
+                                                    {review.username}
+                                                    {review.created_at ? ` \u00B7 ${formatReviewDate(review.created_at)}` : ''}
+                                                </span>
+                                            </div>
+                                            {review.text && <p className='node-review-text'>{review.text}</p>}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        {loggedIn ? (
+                            <div className='node-review-composer'>
+                                <div className='node-review-rate'>
+                                    <StarPicker
+                                        value={rating}
+                                        onChange={(value) => { setRating(value); setPostStatus('idle'); }}
+                                        disabled={postStatus === 'posting'}
+                                    />
+                                    <span className='node-review-rate-hint'>{rating ? `${rating} / 5` : 'Select a rating'}</span>
+                                </div>
+                                <textarea
+                                    className='node-details-review-input'
+                                    placeholder='Create review'
+                                    value={reviewText}
+                                    onChange={(e) => { setReviewText(e.target.value); setPostStatus('idle'); }}
+                                    disabled={postStatus === 'posting'}
+                                    maxLength={2000}
+                                />
+                                <button
+                                    type='button'
+                                    className='node-details-post-btn'
+                                    disabled={rating === 0 || postStatus === 'posting'}
+                                    onClick={handlePost}
+                                >
+                                    {postStatus === 'posting' ? 'Posting\u2026' : 'Post'}
+                                </button>
+                                {postStatus === 'posted' && (
+                                    <p ref={postFeedbackRef} className='node-review-banner node-review-banner--success' role='status'>
+                                        <CheckIcon /> Your review was posted.
+                                    </p>
+                                )}
+                                {postStatus === 'error' && (
+                                    <p ref={postFeedbackRef} className='node-review-banner node-review-banner--error' role='alert'>
+                                        Couldn&rsquo;t post your review. Try again.
+                                    </p>
+                                )}
+                            </div>
+                        ) : (
+                            <p className='node-reviews-message'>
+                                <Link to='/login'>Log in</Link> to write a review.
+                            </p>
+                        )}
                     </section>
 
                     <div className='node-details-actions'>

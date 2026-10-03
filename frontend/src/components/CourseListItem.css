@@ -95,6 +95,10 @@
 
 .course-list-item-ghost {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   height: 34px;
   padding: 0 12px;
   border-radius: 10px;
@@ -107,7 +111,51 @@
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
+.course-list-item-count {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.course-list-item-ghost:hover .course-list-item-count {
+  background: var(--orange-50);
+  color: var(--orange-700);
+}
+
+.course-list-item-actions--solo .course-list-item-ghost {
+  flex: 1;
+}
+
 .course-list-item-ghost:hover {
   border-color: var(--orange-300);
   color: var(--orange-700);
+}
+
+.course-list-item-head-end {
+  gap: 8px;
+}
+
+.course-list-item-remove {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.course-list-item-remove:hover {
+  background: var(--orange-500);
+  color: var(--gray-0);
 }

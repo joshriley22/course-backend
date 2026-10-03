@@ -209,3 +209,124 @@
 .node-details-post-btn:hover {
   background: #000000;
 }
+
+.node-reviews-message {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  border-radius: 12px;
+}
+
+.node-reviews-message a {
+  color: var(--blue-700);
+  font-weight: 800;
+}
+
+.node-reviews-message--error {
+  color: var(--orange-700);
+  background: var(--orange-50);
+}
+
+.node-reviews-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-color: var(--blue-200) transparent;
+  scrollbar-width: thin;
+}
+
+.node-reviews-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.node-reviews-list::-webkit-scrollbar-thumb {
+  background: var(--blue-200);
+  border-radius: 999px;
+}
+
+.node-review {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.node-review-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node-review-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gray-700);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.node-review-composer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.node-review-rate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.node-review-rate-hint {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-500);
+}
+
+.node-details-post-btn:disabled {
+  background: var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+.node-review-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.node-review-banner--success {
+  background: var(--blue-50);
+  color: var(--blue-700);
+  outline: 1.5px solid var(--blue-100);
+}
+
+.node-review-banner--error {
+  background: var(--orange-50);
+  color: var(--orange-700);
+}

@@ -1,7 +1,7 @@
 import './StarRating.css';
 
-const STAR_COUNT = 5;
-const STAR_PATH = 'M10 1 L12.06 7.17 L18.56 7.22 L13.33 11.08 L15.29 17.28 L10 13.5 L4.71 17.28 L6.67 11.08 L1.44 7.22 L7.94 7.17 Z';
+export const STAR_COUNT = 5;
+export const STAR_PATH = 'M10 1 L12.06 7.17 L18.56 7.22 L13.33 11.08 L15.29 17.28 L10 13.5 L4.71 17.28 L6.67 11.08 L1.44 7.22 L7.94 7.17 Z';
 
 function Star({ fill, size }: { fill: number; size: number }) {
     const pct = Math.round(Math.max(0, Math.min(1, fill)) * 100);
