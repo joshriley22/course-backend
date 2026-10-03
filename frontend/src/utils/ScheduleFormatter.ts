@@ -46,7 +46,7 @@ export interface ScheduledCourse {
     code: string;
     number: string;
     name: string;
-    rating: number;
+    rating?: number | null;
     sessions: EligibleCourseSession[];
 }
 
