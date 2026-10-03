@@ -6,6 +6,7 @@ import { WeeklySchedule } from '../components/WeeklySchedule';
 import { SelectedCoursesStrip } from '../components/SelectedCoursesStrip';
 import { CourseSearchPanel } from '../components/CourseSearchPanel';
 import { NodeDetails } from '../components/NodeDetails';
+import type { ReviewSummary } from '../components/NodeDetails';
 import { courseKeyOf, CREDIT_CAP } from '../utils/ScheduleFormatter';
 import { pageTransition } from '../utils/pageTransition';
 import type { CourseDetails, EligibleCourse } from '../types';
@@ -71,6 +72,15 @@ export function Home() {
         setSelectedCourses((prev) => prev.filter((c) => courseKeyOf(c) !== key));
     }, []);
 
+    const handleReviewPosted = useCallback((course: { code: string; number: string }, summary: ReviewSummary) => {
+        const key = courseKeyOf(course);
+        const update = (list: EligibleCourse[]) => list.map((c) => (
+            courseKeyOf(c) === key ? { ...c, reviewCount: summary.reviewCount, rating: summary.rating } : c
+        ));
+        setEligibleCourses(update);
+        setSelectedCourses(update);
+    }, []);
+
     const handleScheduleSelect = useCallback((course: { code: string; number: string }) => openDetails(course), [openDetails]);
 
     return (
@@ -105,6 +115,7 @@ export function Home() {
                         key={`${nodeInfo.code}${nodeInfo.number}`}
                         nodeInfo={nodeInfo}
                         focusSection={focusSection}
+                        onReviewPosted={handleReviewPosted}
                         onClose={() => setDetailMode(false)}
                     />
                 )}
