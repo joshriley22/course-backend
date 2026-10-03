@@ -15,7 +15,12 @@ def create_review(review: ReviewCreate):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=review.course_code + review.course_number + " not found!")
 
     with db.get_session() as session:
-        service.create_review(session, review.course_code, review.course_number, review.review_text, review.rating, review.username)
+        created = service.create_review(session, review.course_code, review.course_number, review.review_text, review.rating, review.username)
+
+    if created is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!")
+
+    return created
 
 
 @router.get("/users/{username}/reviews")
