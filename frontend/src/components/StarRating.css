@@ -12,6 +12,12 @@
 .star-fill {
   position: absolute;
   inset: 0;
+  display: flex;
   overflow: hidden;
   color: var(--star-filled);
+}
+
+.star svg {
+  display: block;
+  flex-shrink: 0;
 }
