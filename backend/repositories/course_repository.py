@@ -96,6 +96,25 @@ class CourseRepository:
 
         return response
 
+    def search_courses(self, session, tokens, compact, limit):
+        query = """
+        MATCH (c:Course)
+        WITH c, toLower(c.code) AS code_lower,
+             split(toLower(c.code + ' ' + toString(c.number) + ' ' + coalesce(c.name, '')), ' ') AS words,
+             toLower(c.code + toString(c.number)) AS code_number
+        WHERE ALL(token IN $tokens WHERE ANY(word IN words WHERE word STARTS WITH token))
+           OR code_number STARTS WITH $compact
+        WITH c, code_lower ORDER BY coalesce(toFloat(c.credits), 0) DESC
+        WITH code_lower, c.code AS code, c.number AS number, head(collect(c)) AS course
+        RETURN code, number, course.name AS name, course.rating AS rating, course.credits AS credits
+        ORDER BY (code_lower = $first_token) DESC, (code_lower STARTS WITH $first_token) DESC, code, number
+        LIMIT $limit
+        """
+
+        result = session.run(query, tokens=tokens, compact=compact, first_token=tokens[0], limit=limit)
+
+        return [record.data() for record in result]
+
     def get_courses(self, session):
 
         query = """
@@ -232,7 +251,8 @@ class CourseRepository:
 
         RETURN candidate.code AS code, candidate.number AS number, candidate.name AS name,
                candidate.rating AS rating, integration_satisfied,
-               electives_satisfied, avg_professor_rating, next_count, sessions
+               electives_satisfied, avg_professor_rating, next_count, sessions,
+               size([(candidate)-[:REVIEW]-(:Review) | 1]) AS review_count
         ORDER BY rating DESC, integration_satisfied DESC, electives_satisfied DESC, avg_professor_rating DESC, next_count DESC
         """
 

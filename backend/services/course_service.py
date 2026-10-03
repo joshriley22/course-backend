@@ -34,6 +34,15 @@ class CourseService:
 
         return self.repo.get_courses_by_code(session, course_code)
 
+    def search_courses(self, session, query, limit):
+
+        normalized = query.strip().lower()
+        tokens = normalized.split()
+        if not tokens:
+            return []
+
+        return self.repo.search_courses(session, tokens, normalized.replace(" ", ""), limit)
+
     def get_courses(self, session):
 
         return self.repo.get_courses(session)
