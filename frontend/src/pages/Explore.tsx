@@ -11,6 +11,7 @@ import { NodeDetails } from '../components/NodeDetails';
 import type {CourseDetails} from '../types';
 import { getNodeProps } from '../utils/NodeInitializer';
 import { getEdgesProps } from '../utils/EdgeInitializer';
+import { CODE_FILTER_THRESHOLD } from '../utils/NodePositionInitializer';
 import { formatFields } from '../utils/FieldFormatter';
 import { useCollisionSimulation } from '../utils/useCollisionSimulation';
 import { pageTransition } from '../utils/pageTransition';
@@ -105,12 +106,12 @@ export function Explore() {
     [nodeProps],
   );
   const visibleNodeProps = useMemo(
-    () => (codes.length >= 5 ? nodeProps.filter((n) => n.data.code === codes[codeIndex]) : nodeProps),
+    () => (codes.length >= CODE_FILTER_THRESHOLD ? nodeProps.filter((n) => n.data.code === codes[codeIndex]) : nodeProps),
     [nodeProps, codes, codeIndex],
   );
   const visibleNodeIds = useMemo(() => new Set(visibleNodeProps.map((n) => n.id)), [visibleNodeProps]);
   const visibleEdgeProps = useMemo(
-    () => (codes.length >= 5 ? edgeProps.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)) : edgeProps),
+    () => (codes.length >= CODE_FILTER_THRESHOLD ? edgeProps.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)) : edgeProps),
     [edgeProps, codes, visibleNodeIds],
   );
 
@@ -121,7 +122,7 @@ export function Explore() {
             <motion.div id='graph-container' className='main-content flex flex-col items-center full-width full-height' {...pageTransition}>
                   <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} tier='major' />
                   <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} tier='field' />
-                  {codes.length >= 5 && (
+                  {codes.length >= CODE_FILTER_THRESHOLD && (
                     <Header codes={codes} currentIndex={codeIndex} onPrev={() => handlePrev(setCodeIndex, codes)} onNext={() => handleNext(setCodeIndex, codes)} tier='code' />
                   )}
                   <ReactFlowProvider>
