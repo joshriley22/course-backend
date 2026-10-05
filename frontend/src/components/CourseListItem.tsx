@@ -91,7 +91,6 @@ export function CourseListItem({ course, isSelected = false, disabledByCap = fal
                     {onShowReviews && (
                         <button type='button' className='course-list-item-ghost' onClick={(e) => { e.stopPropagation(); onShowReviews(course); }}>
                             Reviews
-                            {course.reviewCount != null && <span className='course-list-item-count'>{course.reviewCount}</span>}
                         </button>
                     )}
                 </div>
