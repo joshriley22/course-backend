@@ -84,26 +84,31 @@ export function Explore() {
 
   useEffect(() => {
       if(majors.length == 0) return;
+      let stale = false;
       fetchFields(majors[majorIndex])
-        .then((fields) => setFields(fields))
+        .then((fields) => { if (!stale) setFields(fields); })
         .catch(console.error);
       setFieldIndex(0);
+      return () => { stale = true; };
   }, [majors, majorIndex]);
 
   const formattedFields = formatFields(fields);
 
    useEffect(() => {
      if (majors.length === 0 || fields.length === 0) return;
+     let stale = false;
      fetchCourseEdges(majors[majorIndex], fields[fieldIndex])
        .then((edges) => {
+           if (stale) return;
            setNodeProps(getNodeProps(edges));
            setCourseEdgeProps(getEdgesProps(edges));
            setCodeIndex(0);
            })
        .catch(console.error);
      fetchMajorRelEdges(majors[majorIndex], fields[fieldIndex])
-       .then((edges) => setCoprereqEdgeProps(getEdgesProps(edges)))
+       .then((edges) => { if (!stale) setCoprereqEdgeProps(getEdgesProps(edges)); })
        .catch(console.error);
+     return () => { stale = true; };
    }, [majors, majorIndex, fields, fieldIndex]);
 
   const handlePrev = useCallback((set, list: string[]) => set((i) => i == 0 ? list.length - 1 : i - 1), []);
