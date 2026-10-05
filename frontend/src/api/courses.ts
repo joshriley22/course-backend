@@ -45,6 +45,23 @@ export async function fetchCoPrereqEdges(major: string, field: string): Promise<
   }));
   }
 
+export async function fetchMajorRelEdges(major: string, field: string): Promise<CourseEdge[]> {
+  const res = await fetch(`/courses/${major}/${field}/major-rel-edges`);
+  if (!res.ok) throw new Error(`Failed to fetch major relationship edges for ${major}`);
+  const data = await res.json();
+  return data.map((d: any) => ({
+    source_code: d.source_code,
+    source_number: d.source_number,
+    source_name: d.source_name,
+    source_rating: d.source_rating,
+    target_code: d.target_code,
+    target_number: d.target_number,
+    target_name: d.target_name,
+    target_rating : d.target_rating,
+    relationship: d.relationship,
+  }));
+  }
+
 export async function fetchMajors(): Promise<string[]> {
     const res = await fetch('/majors');
     if (!res.ok) throw new Error('Failed to fetch majors');
@@ -78,21 +95,26 @@ export async function fetchEligibleNextCourses(courseTakenList: string[], electi
     });
     if (!res.ok) throw new Error('Failed to fetch eligible next courses');
     const data = await res.json();
-    return data.map((c: any): EligibleCourse => ({
-        code: c.code,
-        number: c.number,
-        name: c.name,
-        rating: c.rating,
-        reviewCount: c.review_count ?? 0,
-        sessions: (c.sessions ?? []).map((s: any) => ({
-            days: s.days,
-            startTime: s.start_time,
-            endTime: s.end_time,
-            startsAfter10: !!s.starts_after_10,
-            endsBefore5: !!s.ends_before_5,
-            avoidsLunch: !!s.avoids_lunch,
-        })),
-    }));
+    return data.map((c: any): EligibleCourse => {
+        const credits = Number(c.credits);
+        return {
+            code: c.code,
+            number: c.number,
+            name: c.name,
+            rating: c.rating,
+            reviewCount: c.review_count ?? 0,
+            credits: Number.isFinite(credits) ? credits : undefined,
+            sessions: (c.sessions ?? []).map((s: any) => ({
+                days: s.days,
+                startTime: s.start_time,
+                endTime: s.end_time,
+                isLab: !!s.is_lab,
+                startsAfter10: !!s.starts_after_10,
+                endsBefore5: !!s.ends_before_5,
+                avoidsLunch: !!s.avoids_lunch,
+            })),
+        };
+    });
 }
 
 export async function searchCourses(query: string, signal?: AbortSignal): Promise<CourseSearchResult[]> {
