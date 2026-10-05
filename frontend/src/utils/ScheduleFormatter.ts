@@ -96,12 +96,25 @@ export function layoutScheduleBlocks(courses: ScheduledCourse[]): ScheduleBlock[
     return blocks;
 }
 
+/** Sessions with real meeting days and times; the eligible-courses query emits
+ * an all-null placeholder session for courses with no classes on record. */
+export function meetingSessions(sessions: EligibleCourseSession[]): EligibleCourseSession[] {
+    return sessions.filter((s) => s.days && s.startTime && s.endTime);
+}
+
+/** Splits a course's meeting sessions into lectures and labs/discussions. */
+export function sessionGroups(sessions: EligibleCourseSession[]): { lectures: EligibleCourseSession[]; labs: EligibleCourseSession[] } {
+    const meetings = meetingSessions(sessions);
+    return {
+        lectures: meetings.filter((s) => !s.isLab),
+        labs: meetings.filter((s) => s.isLab),
+    };
+}
+
 export function courseKeyOf(course: { code: string; number: string }): string {
     return `${course.code}${course.number}`;
 }
 
-/** Compact "9:00–11:30 AM" style range for narrow calendar blocks; drops the
- * repeated AM/PM when both ends share a period. */
 export function formatBlockTimeRange(startMinutes: number, endMinutes: number): string {
     const clockPart = (total: number) => {
         const hour = Math.floor(total / 60);
