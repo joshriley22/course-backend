@@ -56,7 +56,9 @@ export function SelectedCoursesStrip({ courses, totalCredits, onRemove, onShowDe
                                 </button>
                                 <span className='selected-course-code'>{course.code} {course.number}</span>
                                 <span className='selected-course-name'>{course.name}</span>
-                                <span className='selected-course-credits'>{course.credits} credit{course.credits === 1 ? '' : 's'}</span>
+                                {course.credits != null && (
+                                    <span className='selected-course-credits'>{course.credits} credit{course.credits === 1 ? '' : 's'}</span>
+                                )}
                                 <div className='selected-course-meta flex flex-row items-center justify-between'>
                                     <StarRating rating={course.rating ?? 0} size={11} />
                                     <span>{session ? `${formatSessionDays(session.days)} ${formatSessionTime(session.startTime, session.endTime)}` : 'TBD'}</span>

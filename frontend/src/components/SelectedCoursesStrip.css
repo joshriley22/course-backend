@@ -9,7 +9,7 @@
 }
 
 .selected-courses-strip-caption {
-  padding: 14px 20px 10px;
+  padding: 14px 20px 6px;
   flex-shrink: 0;
 }
 
@@ -34,7 +34,7 @@
   flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 20px 18px;
+  padding: 4px 20px 14px;
   gap: 12px;
   scrollbar-color: var(--blue-200) transparent;
   scrollbar-width: thin;
