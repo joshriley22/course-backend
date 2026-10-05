@@ -65,8 +65,25 @@
   font-size: 19px;
   font-weight: 800;
   letter-spacing: 0.03em;
-  min-width: 120px;
+  /* Fixed width keeps the arrows stationary regardless of label length */
+  width: min(var(--header-label-width), calc(100% - 96px));
+  flex-shrink: 0;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-bar--major {
+  --header-label-width: 440px;
+}
+
+.header-bar--field {
+  --header-label-width: 540px;
+}
+
+.header-bar--code {
+  --header-label-width: 160px;
 }
 
 .header-bar--major .header-label {

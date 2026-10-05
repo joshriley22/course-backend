@@ -25,7 +25,7 @@ export function Header({ codes, currentIndex, onPrev, onNext, tier }: HeaderProp
         </svg>
       </button>
 
-      <span className='header-label'>
+      <span className='header-label' title={code}>
         {code}
       </span>
 
