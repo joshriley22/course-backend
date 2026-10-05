@@ -51,7 +51,7 @@ export class CourseEdgeData {
 
     getEdgeProps() : CourseEdgeProps {
     return {
-                id: this.getEdgeSourceId() + '->' + this.getEdgeTargetId()  + ((this.relationship === undefined) ? '' : `For ${this.for_course_code}${this.for_course_number}${this.relationship}`),
+                id: this.getEdgeSourceId() + '->' + this.getEdgeTargetId()  + ((this.relationship === undefined) ? '' : (this.for_course_code === undefined) ? this.relationship : `For ${this.for_course_code}${this.for_course_number}${this.relationship}`),
                 source: this.getEdgeSourceId(),
                 target: this.getEdgeTargetId(),
                 type: (this.relationship) ? "coprereqEdge" : "courseEdge",
