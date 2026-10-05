@@ -85,6 +85,11 @@ class CourseService:
         edges = self.repo.get_co_prereq_edges(session, major_name, field)
         return edges
 
+    def get_major_rel_edges(self, session, major_name, field):
+
+        edges = self.repo.get_major_rel_edges(session, major_name, field)
+        return edges
+
     def get_codes(self, session):
 
         return self.repo.get_codes(session)

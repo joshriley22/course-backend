@@ -198,6 +198,18 @@ class CourseRepository:
         result = session.run(query, major_name=major_name, field=field);
         return [record.data() for record in result]
 
+    def get_major_rel_edges(self, session, major_name, field):
+
+        query = """
+        MATCH (c:Course)-[e:MAJOR_REL {for_major_name:$major_name, for_field:$field}]->(c1:Course)
+        RETURN c.code AS source_code, c.number AS source_number, c.name AS source_name, c.rating AS source_rating,
+        c1.code AS target_code, c1.number AS target_number, c1.name AS target_name, c1.rating AS target_rating,
+        'or' AS relationship
+        """
+
+        result = session.run(query, major_name=major_name, field=field)
+        return [record.data() for record in result]
+
 
 
     def get_sink_nodes(self, session, major_name, field):
@@ -244,13 +256,14 @@ class CourseRepository:
         WITH candidate, next_count, electives_satisfied, integration_satisfied, avg_professor_rating,
              collect(DISTINCT {
                  days: session.days, start_time: session.start_time, end_time: session.end_time,
+                 is_lab: coalesce(session.is_lab, false),
                  starts_after_10: CASE WHEN session.start_time > '10.00.00.000000' THEN 1 ELSE 0 END,
                  ends_before_5: CASE WHEN session.end_time < '17.00.00.000000' THEN 1 ELSE 0 END,
                  avoids_lunch: CASE WHEN NOT (session.start_time < '14.00.00.000000' AND session.end_time > '12.00.00.000000') THEN 1 ELSE 0 END
              }) AS sessions
 
         RETURN candidate.code AS code, candidate.number AS number, candidate.name AS name,
-               candidate.rating AS rating, integration_satisfied,
+               candidate.rating AS rating, candidate.credits AS credits, integration_satisfied,
                electives_satisfied, avg_professor_rating, next_count, sessions,
                size([(candidate)-[:REVIEW]-(:Review) | 1]) AS review_count
         ORDER BY rating DESC, integration_satisfied DESC, electives_satisfied DESC, avg_professor_rating DESC, next_count DESC
