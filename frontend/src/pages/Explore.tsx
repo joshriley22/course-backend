@@ -73,9 +73,14 @@ export function Explore() {
 
   useEffect(() => {
     fetchMajors()
-      .then((majors) => setMajors(majors))
+      .then((majors) => {
+          const newMajors = majors.filter(course => course != "Arts & Sciences General Requirements" && course != "Engineering General Requirements")
+          newMajors.unshift("Arts & Sciences General Requirements", "Engineering General Requirements");
+          setMajors(newMajors);
+          })
       .catch(console.error);
   }, []);
+
 
   useEffect(() => {
       if(majors.length == 0) return;
