@@ -23,6 +23,18 @@ def create_review(review: ReviewCreate):
     return created
 
 
+@router.delete("/users/{username}/reviews/{course_code}/{course_number}/{created_at}")
+def delete_review(username: str, course_code: str, course_number: str, created_at: int):
+
+    with db.get_session() as session:
+        deleted = service.delete_review(session, course_code, course_number, username, created_at)
+
+    if deleted is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found!")
+
+    return deleted
+
+
 @router.get("/users/{username}/reviews")
 def get_reviews_by_user(username: str):
 
