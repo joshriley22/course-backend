@@ -72,6 +72,12 @@ export function formatFields(fieldList: string[]) : string[] {
             case 'hss':
                 formattedList.push('Humanities & Social Science Electives');
                 break;
+            case 'capstone':
+                formattedList.push('Capstone');
+                break;
+            case 'apma':
+                formattedList.push('Applied Math Electives');
+                break;
             default:
                 formattedList.push(field);
                 break;
