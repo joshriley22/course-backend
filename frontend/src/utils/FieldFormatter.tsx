@@ -1,87 +1,142 @@
 
+// Major field key -> display label. Keys come from the Major nodes' `fields` (see backend/db_setup/major_specs.py
+// and the initialize_*_major.py scripts); unknown keys are shown as-is.
+const FIELD_LABELS: Record<string, string> = {
+    prereq: 'Prerequisites',
+    elective: 'Electives',
+    core: 'Core',
+    integration: 'Integration Electives',
+    general: 'General Electives',
+    computing: 'Computing Electives',
+    aip: 'Artistic, Interpretive, and Philosophical Inquiry',
+    cmp: 'The Chemical, Mathematical, and Physical Universe',
+    csw: 'Cultures and Societies of the World',
+    hp: 'Historical Perspectives',
+    ls: 'Living Systems',
+    ss: 'Science and Society',
+    ses: 'Social and Economic Systems',
+    writing1: 'First Writing Requirement',
+    writing2: 'Second Writing Requirement',
+    foundations: 'Engineering Foundations',
+    calculus: 'Calculus',
+    chemistry: 'Chemistry',
+    physics: 'Physics',
+    programming: 'Introduction to Programming',
+    sts: 'Science, Technology, & Society',
+    mathsci: 'Math/Science Elective I',
+    hss: 'Humanities & Social Science Electives',
+    capstone: 'Capstone',
+    apma: 'Applied Math Electives',
+    math: 'Mathematics',
+    mathelective: 'Math Elective',
+    engineering: 'Engineering Electives',
+    technical: 'Technical Electives',
+    ece: 'Electrical & Computer Engineering',
+    cs: 'Computer Science',
+    design: 'Major Design Experience',
+    advanced: 'Advanced Courses',
+    american: 'American Politics',
+    analysis: 'Data Analysis Electives',
+    application: 'Planning Applications',
+    applied: 'Applied Coursework',
+    arthistory: 'Art History',
+    behavioral: 'Behavioral & Cognitive Neuroscience',
+    belief: 'Belief & Thought',
+    cct: 'Composition & Creative Technology',
+    cellular: 'Cellular & Molecular Neuroscience',
+    civic: 'Civic & Political Contexts',
+    civilization: 'Civilization',
+    clinical: 'Clinical & Social Psychology',
+    clinicalexp: 'Clinical Experiences & Seminars',
+    cognitive: 'Cognitive Psychology',
+    collaborative: 'Collaborative Concentrations',
+    commerce: 'Global Commerce in Culture & Society',
+    communication: 'Developmental Communication Sciences',
+    comparative: 'Comparative Politics',
+    computational: 'Computational Electives',
+    concentration: 'Concentration',
+    context: 'Wider Context',
+    corequisite: 'Co-Requisites',
+    crafting: 'Crafting Performance',
+    creating: 'Creating Performance',
+    critical: 'Critical Studies',
+    cultural: 'Cultural Literacy',
+    culture: 'Language, Literature & Culture',
+    departmental: 'Departmental Electives',
+    development: 'Global Development Studies',
+    developmental: 'Developmental Psychology',
+    discovery: 'Discovery',
+    distribution: 'Distributional Electives',
+    diversity: 'Diversity & Inclusion',
+    economic: 'Economic Analysis',
+    finance: 'Finance Electives',
+    focused: 'Focused Inquiry',
+    folklore: 'Folklore',
+    foundation: 'Foundation Courses',
+    gateway: 'Gateway Courses',
+    global: 'African, Asian & Indigenous Traditions',
+    greek: 'Greek',
+    historical: 'Historical Linguistics',
+    history: 'History',
+    humanities: 'Humanities & Social Sciences',
+    inquiry: 'Conduct of Inquiry',
+    international: 'International Relations',
+    interpretation: 'Interpretation & Invention',
+    intro: 'Introductory Course',
+    lab: 'Laboratory',
+    language: 'Language',
+    latin: 'Latin',
+    leadership: 'Leadership',
+    linguistics: 'Linguistics',
+    literature: 'Literature',
+    logic: 'Logic',
+    major: 'Major Coursework',
+    mathcs: 'Advanced Math/CS Elective',
+    mesa: 'Global Middle East & South Asia',
+    methods: 'Research Methods & Data Analysis',
+    modern: 'Modern Period',
+    moral: 'Moral Philosophy',
+    musicianship: 'Musicianship',
+    neuroscience: 'Neuroscience',
+    performance: 'Performance',
+    period1700: 'Literature 1700-1900',
+    philosophy: 'Philosophy',
+    policy: 'Policy',
+    politics: 'Politics Electives',
+    populations: 'Special Populations',
+    practice: 'Practice',
+    practicum: 'Practicum',
+    premodern: 'Pre-Modern Period',
+    preservation: 'Historic Preservation',
+    professional: 'Professional Electives',
+    psychology: 'Psychology',
+    publichealth: 'Public Health',
+    quantitative: 'Quantitative Requirements',
+    regional: 'Regional Concentration',
+    related: 'Related Courses',
+    research: 'Research',
+    rmtopics: 'Research Methods Topics',
+    rntobsn: 'RN to BSN',
+    science: 'Science',
+    security: 'Global Security & Justice',
+    seminar: 'Seminar',
+    social: 'Social & Political Philosophy',
+    structure: 'Language Structure',
+    studies: 'Area Studies',
+    supporting: 'Supporting Courses',
+    survey: 'Surveys',
+    sustainability: 'Global Sustainability',
+    theoretical: 'Theoretical Foundations',
+    theory: 'Theory',
+    thesis: 'Thesis',
+    topical: 'Topical Electives',
+    topics: 'Topics',
+    track: 'Track Electives',
+    upper: 'Upper-Level Electives',
+    values: 'Values, Culture & History',
+    workshop: 'Introductory History Workshop',
+};
+
 export function formatFields(fieldList: string[]) : string[] {
-    const formattedList : string[] = [];
-    for(const field of fieldList) {
-        switch(field) {
-            case 'prereq':
-                formattedList.push('Prerequisites');
-                break;
-            case 'elective':
-                formattedList.push('Electives');
-                break;
-            case 'core':
-                formattedList.push('Core');
-                break;
-            case 'integration':
-                formattedList.push('Integration Electives');
-                break;
-            case 'general':
-                formattedList.push('General Electives');
-                break;
-            case 'computing':
-                formattedList.push('Computing Electives');
-                break;
-            case 'aip':
-                formattedList.push('Artistic, Interpretive, and Philosophical Inquiry');
-                break;
-            case 'cmp':
-                formattedList.push('The Chemical, Mathematical, and Physical Universe');
-                break;
-            case 'csw':
-                formattedList.push('Cultures and Societies of the World');
-                break;
-            case 'hp':
-                formattedList.push('Historical Perspectives');
-                break;
-            case 'ls':
-                formattedList.push('Living Systems');
-                break;
-            case 'ss':
-                formattedList.push('Science and Society');
-                break;
-            case 'ses':
-                formattedList.push('Social and Economic Systems');
-                break;
-            case 'writing1':
-                formattedList.push('First Writing Requirement');
-                break;
-            case 'writing2':
-                formattedList.push('Second Writing Requirement');
-                break;
-            case 'foundations':
-                formattedList.push('Engineering Foundations');
-                break;
-            case 'calculus':
-                formattedList.push('Calculus');
-                break;
-            case 'chemistry':
-                formattedList.push('General Chemistry');
-                break;
-            case 'physics':
-                formattedList.push('General Physics');
-                break;
-            case 'programming':
-                formattedList.push('Introduction to Programming');
-                break;
-            case 'sts':
-                formattedList.push('Science, Technology, & Society');
-                break;
-            case 'mathsci':
-                formattedList.push('Math/Science Elective I');
-                break;
-            case 'hss':
-                formattedList.push('Humanities & Social Science Electives');
-                break;
-            case 'capstone':
-                formattedList.push('Capstone');
-                break;
-            case 'apma':
-                formattedList.push('Applied Math Electives');
-                break;
-            default:
-                formattedList.push(field);
-                break;
-            }
-        }
-        return formattedList;
-    }
+    return fieldList.map((field) => FIELD_LABELS[field] ?? field);
+}
