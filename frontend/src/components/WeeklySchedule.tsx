@@ -44,9 +44,6 @@ export function WeeklySchedule({ courses, onSelectCourse }: WeeklyScheduleProps)
         <div className='weekly-schedule flex flex-col'>
             <div className='weekly-schedule-caption flex flex-row items-center justify-between'>
                 <h2>Your Schedule</h2>
-                {courses.length === 0 && (
-                    <span className='weekly-schedule-hint'>Add a course to make it yours</span>
-                )}
             </div>
             <div className='weekly-schedule-scroll'>
                 <div className='weekly-schedule-grid' style={{ gridTemplateRows: `36px ${gridHeight}px` }}>

@@ -22,12 +22,6 @@
   color: var(--blue-900);
 }
 
-.weekly-schedule-hint {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--gray-500);
-}
-
 .weekly-schedule-scroll {
   flex: 1;
   overflow: auto;
