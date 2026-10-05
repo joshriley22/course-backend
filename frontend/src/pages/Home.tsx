@@ -7,9 +7,10 @@ import { SelectedCoursesStrip } from '../components/SelectedCoursesStrip';
 import { CourseSearchPanel } from '../components/CourseSearchPanel';
 import { NodeDetails } from '../components/NodeDetails';
 import type { ReviewSummary } from '../components/NodeDetails';
-import { courseKeyOf, CREDIT_CAP } from '../utils/ScheduleFormatter';
+import { SessionPicker } from '../components/SessionPicker';
+import { courseKeyOf, CREDIT_CAP, sessionGroups } from '../utils/ScheduleFormatter';
 import { pageTransition } from '../utils/pageTransition';
-import type { CourseDetails, EligibleCourse } from '../types';
+import type { CourseDetails, EligibleCourse, EligibleCourseSession } from '../types';
 import '../App.css';
 import './Home.css';
 
@@ -22,6 +23,7 @@ export function Home() {
     const [nodeInfo, setNodeInfo] = useState<CourseDetails | null>(null);
     const [detailMode, setDetailMode] = useState(false);
     const [focusSection, setFocusSection] = useState<'reviews' | undefined>(undefined);
+    const [sessionChoice, setSessionChoice] = useState<EligibleCourse | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -55,17 +57,35 @@ export function Home() {
             .catch(console.error);
     }, []);
 
-    const handleToggleSelected = useCallback((course: EligibleCourse) => {
+    // Selected courses keep only the sessions the user chose (one lecture, one lab/discussion).
+    const addWithSessions = useCallback((course: EligibleCourse, sessions: EligibleCourseSession[]) => {
         setSelectedCourses((prev) => {
             const key = courseKeyOf(course);
-            if (prev.some((c) => courseKeyOf(c) === key)) {
-                return prev.filter((c) => courseKeyOf(c) !== key);
-            }
+            if (prev.some((c) => courseKeyOf(c) === key)) return prev;
             const currentCredits = prev.reduce((sum, c) => sum + (c.credits ?? 0), 0);
             if (currentCredits + (course.credits ?? 0) > CREDIT_CAP) return prev;
-            return [...prev, course];
+            return [...prev, { ...course, sessions }];
         });
     }, []);
+
+    const handleToggleSelected = useCallback((course: EligibleCourse) => {
+        const key = courseKeyOf(course);
+        if (selectedCourses.some((c) => courseKeyOf(c) === key)) {
+            setSelectedCourses((prev) => prev.filter((c) => courseKeyOf(c) !== key));
+            return;
+        }
+        const { lectures, labs } = sessionGroups(course.sessions);
+        if (lectures.length <= 1 && labs.length <= 1) {
+            addWithSessions(course, [...lectures, ...labs]);
+        } else {
+            setSessionChoice(course);
+        }
+    }, [selectedCourses, addWithSessions]);
+
+    const handleSessionsChosen = useCallback((sessions: EligibleCourseSession[]) => {
+        if (sessionChoice) addWithSessions(sessionChoice, sessions);
+        setSessionChoice(null);
+    }, [sessionChoice, addWithSessions]);
 
     const handleRemove = useCallback((course: EligibleCourse) => {
         const key = courseKeyOf(course);
@@ -117,6 +137,15 @@ export function Home() {
                         focusSection={focusSection}
                         onReviewPosted={handleReviewPosted}
                         onClose={() => setDetailMode(false)}
+                    />
+                )}
+            </AnimatePresence>
+            <AnimatePresence>
+                {sessionChoice != null && (
+                    <SessionPicker
+                        course={sessionChoice}
+                        onChoose={handleSessionsChosen}
+                        onClose={() => setSessionChoice(null)}
                     />
                 )}
             </AnimatePresence>
