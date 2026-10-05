@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import '@xyflow/react/dist/style.css';
 import '../App.css';
 
-import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields } from '../api/courses';
+import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajorRelEdges, fetchMajors, fetchFields } from '../api/courses';
 import { Header } from '../components/Header';
 import { CourseNode } from '../components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from '../components/CourseEdge';
@@ -95,6 +95,9 @@ export function Explore() {
            setCourseEdgeProps(getEdgesProps(edges));
            setCodeIndex(0);
            })
+       .catch(console.error);
+     fetchMajorRelEdges(majors[majorIndex], fields[fieldIndex])
+       .then((edges) => setCoprereqEdgeProps(getEdgesProps(edges)))
        .catch(console.error);
    }, [majors, majorIndex, fields, fieldIndex]);
 
