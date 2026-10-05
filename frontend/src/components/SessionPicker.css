@@ -1,0 +1,85 @@
+.session-picker-panel {
+  width: min(94vw, 440px);
+}
+
+.session-picker-subtitle {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.session-picker-results {
+  min-height: 0;
+  gap: 18px;
+}
+
+.session-picker-group {
+  border: none;
+  gap: 6px;
+}
+
+.session-picker-group-title {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--blue-600);
+}
+
+.session-picker-option {
+  cursor: pointer;
+  outline: 1.5px solid transparent;
+  transition: background-color 0.15s ease, outline-color 0.15s ease;
+}
+
+.session-picker-option input {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--blue-700);
+  cursor: pointer;
+}
+
+.session-picker-option--chosen,
+.session-picker-option--chosen:hover {
+  background: var(--blue-50);
+  outline-color: var(--blue-300);
+}
+
+.session-picker-time {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.session-picker-footer {
+  gap: 10px;
+}
+
+.session-picker-cancel {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid var(--gray-200);
+  background: var(--gray-0);
+  color: var(--gray-600);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.session-picker-cancel:hover {
+  border-color: var(--blue-300);
+  color: var(--blue-700);
+}
+
+.session-picker-footer .picker-done:disabled {
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
