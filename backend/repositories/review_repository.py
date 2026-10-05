@@ -23,6 +23,22 @@ class ReviewRepository:
         record = result.single()
         return record.data() if record is not None else None
 
+    def delete_review(self, session, course_code, course_number, username, created_at):
+        query = """
+    MATCH (u:User {username:$username})-[:AUTHOR]->(r:Review {created_at:$created_at})
+    MATCH (c:Course {code:$course_code, number:$course_number})-[:REVIEW]->(r)
+    OPTIONAL MATCH (c)-[:REVIEW]->(other:Review) WHERE other <> r
+    WITH c, r, avg(other.rating) AS new_rating, count(other) AS remaining
+    SET c.rating = new_rating
+    DETACH DELETE r
+    RETURN c.rating AS course_rating, remaining AS review_count
+    """
+
+        result = session.run(query, course_code=course_code, course_number=course_number, username=username, created_at=created_at)
+
+        record = result.single()
+        return record.data() if record is not None else None
+
     def get_reviews_by_user(self, session, username):
         query = """
     MATCH (u:User {username:$username})-[:AUTHOR]->(r:Review)
