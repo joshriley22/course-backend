@@ -6,7 +6,7 @@ import { CourseNodeData } from '../components/CourseNode.tsx';
 const NODE_W = 80;
 const NODE_H = 80;
 
-export const CODE_FILTER_THRESHOLD = 5;
+export const CODE_FILTER_THRESHOLD = 3;
 
 export function getPositionsWithNodeProps(nodes : CourseNodeData[], edgeProps: CourseEdgeProps[] ) : CourseNodeProps[] {
     const codes = new Set(nodes.map((n) => n.getCode()));
