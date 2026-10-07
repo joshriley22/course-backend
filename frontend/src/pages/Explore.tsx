@@ -106,7 +106,7 @@ export function Explore() {
            })
        .catch(console.error);
      fetchMajorRelEdges(majors[majorIndex], fields[fieldIndex])
-       .then((edges) => { if (!stale) setMajorRelEdgeProps(edges.length <= MAJOR_REL_EDGE_LIMIT ? getEdgesProps(edges) : []); })
+       .then((edges) => { if (!stale) setMajorRelEdgeProps(getEdgesProps(edges)); })
        .catch(console.error);
      return () => { stale = true; };
    }, [majors, majorIndex, fields, fieldIndex]);
