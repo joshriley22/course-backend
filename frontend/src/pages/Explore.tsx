@@ -5,7 +5,7 @@ import '../App.css';
 
 import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajorRelEdges, fetchMajors, fetchFields } from '../api/courses';
 import { Header } from '../components/Header';
-import { CourseNode } from '../components/CourseNode';
+import { CourseNode, SIDE_HANDLES } from '../components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from '../components/CourseEdge';
 import { NodeDetails } from '../components/NodeDetails';
 import type {CourseDetails} from '../types';
@@ -57,8 +57,7 @@ function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNod
 export function Explore() {
   const [nodeProps, setNodeProps] = useState([]);
   const [courseEdgeProps, setCourseEdgeProps] = useState([]);
-  const [coprereqEdgeProps, setCoprereqEdgeProps] = useState([]);
-  const edgeProps = courseEdgeProps.concat(coprereqEdgeProps);
+  const [majorRelEdgeProps, setMajorRelEdgeProps] = useState([]);
   const [majors, setMajors] = useState<string[]>([]);
   const [fields, setFields] = useState<string[]>([]);
   const [majorIndex, setMajorIndex] = useState(0);
@@ -107,13 +106,29 @@ export function Explore() {
            })
        .catch(console.error);
      fetchMajorRelEdges(majors[majorIndex], fields[fieldIndex])
-       .then((edges) => { if (!stale) setCoprereqEdgeProps(edges.length < MAJOR_REL_EDGE_LIMIT ? getEdgesProps(edges) : []); })
+       .then((edges) => { if (!stale) setMajorRelEdgeProps(edges.length <= MAJOR_REL_EDGE_LIMIT ? getEdgesProps(edges) : []); })
        .catch(console.error);
      return () => { stale = true; };
    }, [majors, majorIndex, fields, fieldIndex]);
 
   const handlePrev = useCallback((set, list: string[]) => set((i) => i == 0 ? list.length - 1 : i - 1), []);
   const handleNext = useCallback((set, list: string[]) => set((i) => i == list.length - 1 ? 0 : i + 1), []);
+
+  // Major relationship edges connect to the facing sides of their nodes, recomputed as nodes move.
+  const sidedMajorRelEdgeProps = useMemo(() => {
+    const xById = new Map(nodeProps.map((n) => [n.id, n.position.x]));
+    return majorRelEdgeProps.map((e) => {
+      const sourceX = xById.get(e.source);
+      const targetX = xById.get(e.target);
+      const leftToRight = sourceX === undefined || targetX === undefined || sourceX <= targetX;
+      return {
+        ...e,
+        sourceHandle: leftToRight ? SIDE_HANDLES.rightSource : SIDE_HANDLES.leftSource,
+        targetHandle: leftToRight ? SIDE_HANDLES.leftTarget : SIDE_HANDLES.rightTarget,
+      };
+    });
+  }, [majorRelEdgeProps, nodeProps]);
+  const edgeProps = useMemo(() => courseEdgeProps.concat(sidedMajorRelEdgeProps), [courseEdgeProps, sidedMajorRelEdgeProps]);
 
   const codes = useMemo(
     () => Array.from(new Set(nodeProps.map((n) => n.data.code))).sort(),
