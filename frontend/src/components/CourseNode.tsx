@@ -66,6 +66,13 @@ export class CourseNodeData {
 
 const HOVER_Z_INDEX = 1000;
 
+export const SIDE_HANDLES = {
+    leftSource: 'left-source',
+    leftTarget: 'left-target',
+    rightSource: 'right-source',
+    rightTarget: 'right-target',
+} as const;
+
 export function CourseNode(
     { id, data, setNodeInfo, detailMode, setDetailMode }: CourseNodeProps) {
     const { code, number, name, rating } = data;
@@ -127,6 +134,12 @@ export function CourseNode(
                     )}
                 </motion.div>
                 <Handle type="source" className='hidden-visibility' position={Position.Bottom} />
+                {/* Side handles for major relationship edges. Kept after the top/bottom handles so edges
+                    without an explicit handle id still default to top/bottom. */}
+                <Handle type="source" id={SIDE_HANDLES.leftSource} className='hidden-visibility' position={Position.Left} />
+                <Handle type="target" id={SIDE_HANDLES.leftTarget} className='hidden-visibility' position={Position.Left} />
+                <Handle type="source" id={SIDE_HANDLES.rightSource} className='hidden-visibility' position={Position.Right} />
+                <Handle type="target" id={SIDE_HANDLES.rightTarget} className='hidden-visibility' position={Position.Right} />
             </motion.div>
         </MotionConfig>
     </div>
