@@ -19,6 +19,7 @@ import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges, Backgroun
 import './Explore.css';
 
 const edgeTypes = { courseEdge: CourseEdge, coprereqEdge: CoPrereqEdge };
+const MAJOR_REL_EDGE_LIMIT = 3;
 
 function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick }) {
   const { fitView } = useReactFlow();
@@ -106,7 +107,7 @@ export function Explore() {
            })
        .catch(console.error);
      fetchMajorRelEdges(majors[majorIndex], fields[fieldIndex])
-       .then((edges) => { if (!stale) setCoprereqEdgeProps(getEdgesProps(edges)); })
+       .then((edges) => { if (!stale) setCoprereqEdgeProps(edges.length < MAJOR_REL_EDGE_LIMIT ? getEdgesProps(edges) : []); })
        .catch(console.error);
      return () => { stale = true; };
    }, [majors, majorIndex, fields, fieldIndex]);
