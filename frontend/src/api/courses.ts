@@ -1,4 +1,4 @@
-import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview } from '../types';
+import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview, FieldProgress, MajorFields } from '../types';
 
 export async function fetchCodes(): Promise<string[]> {
   const res = await fetch('/courses/codes');
@@ -8,7 +8,7 @@ export async function fetchCodes(): Promise<string[]> {
 }
 
 export async function fetchCourseEdges(major: string, field: string): Promise<CourseEdge[]> {
-  const res = await fetch(`/courses/${major}/${field}/edges`);
+  const res = await fetch(`/courses/${major}/${encodeURIComponent(field)}/edges`);
   if (!res.ok) throw new Error(`Failed to fetch edges for ${major}`);
   const data = await res.json();
   return data.map((d: any) => ({
@@ -27,7 +27,7 @@ export async function fetchCourseEdges(major: string, field: string): Promise<Co
   }
 
 export async function fetchCoPrereqEdges(major: string, field: string): Promise<CourseEdge[]> {
-  const res = await fetch(`/courses/${major}/${field}/co-prereq-edges`);
+  const res = await fetch(`/courses/${major}/${encodeURIComponent(field)}/co-prereq-edges`);
   if (!res.ok) throw new Error(`Failed to fetch edges for ${major}`);
   const data = await res.json();
   return data.map((d: any) => ({
@@ -45,23 +45,6 @@ export async function fetchCoPrereqEdges(major: string, field: string): Promise<
   }));
   }
 
-export async function fetchMajorRelEdges(major: string, field: string): Promise<CourseEdge[]> {
-  const res = await fetch(`/courses/${major}/${field}/major-rel-edges`);
-  if (!res.ok) throw new Error(`Failed to fetch major relationship edges for ${major}`);
-  const data = await res.json();
-  return data.map((d: any) => ({
-    source_code: d.source_code,
-    source_number: d.source_number,
-    source_name: d.source_name,
-    source_rating: d.source_rating,
-    target_code: d.target_code,
-    target_number: d.target_number,
-    target_name: d.target_name,
-    target_rating : d.target_rating,
-    relationship: d.relationship,
-  }));
-  }
-
 export async function fetchMajors(): Promise<string[]> {
     const res = await fetch('/majors');
     if (!res.ok) throw new Error('Failed to fetch majors');
@@ -69,11 +52,22 @@ export async function fetchMajors(): Promise<string[]> {
     return data.map((d) => d.name).sort();
     }
 
-export async function fetchFields(major_name: string): Promise<string[]> {
+export async function fetchFields(major_name: string): Promise<MajorFields> {
     const res = await fetch(`/majors/${encodeURIComponent(major_name)}/fields`);
     if (!res.ok) throw new Error('Failed to fetch fields');
-    const data: string[] | null = await res.json();
-    return data ?? [];
+    const data: Partial<MajorFields> | null = await res.json();
+    return { fields: data?.fields ?? [], credits: data?.credits ?? [] };
+    }
+
+export async function fetchFieldProgress(major_name: string, field: string, courseTakenList: string[], signal?: AbortSignal): Promise<FieldProgress> {
+    const res = await fetch(`/majors/${encodeURIComponent(major_name)}/fields/${encodeURIComponent(field)}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ course_taken_list: courseTakenList }),
+        signal,
+    });
+    if (!res.ok) throw new Error('Failed to fetch field progress');
+    return res.json();
     }
 
 export async function fetchCourseUuid(code: string, number: string): Promise<string> {
