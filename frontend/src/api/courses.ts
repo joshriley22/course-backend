@@ -1,4 +1,4 @@
-import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview, FieldProgress, MajorFields } from '../types';
+import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview, MajorFields } from '../types';
 
 export async function fetchCodes(): Promise<string[]> {
   const res = await fetch('/courses/codes');
@@ -59,17 +59,6 @@ export async function fetchFields(major_name: string): Promise<MajorFields> {
     return { fields: data?.fields ?? [], credits: data?.credits ?? [] };
     }
 
-export async function fetchFieldProgress(major_name: string, field: string, courseTakenList: string[], signal?: AbortSignal): Promise<FieldProgress> {
-    const res = await fetch(`/majors/${encodeURIComponent(major_name)}/fields/${encodeURIComponent(field)}/progress`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ course_taken_list: courseTakenList }),
-        signal,
-    });
-    if (!res.ok) throw new Error('Failed to fetch field progress');
-    return res.json();
-    }
-
 export async function fetchCourseUuid(code: string, number: string): Promise<string> {
     const res = await fetch(`/courses/${code}/${number}/uuid`);
     if (!res.ok) throw new Error('Failed to fetch course uuid');
@@ -109,6 +98,28 @@ export async function fetchEligibleNextCourses(courseTakenList: string[], electi
             })),
         };
     });
+}
+
+// A single course with every session it offers, shaped for adding to the schedule
+export async function fetchScheduleCourse(code: string, number: string): Promise<EligibleCourse> {
+    const res = await fetch(`/courses/${encodeURIComponent(code)}/${encodeURIComponent(number)}/schedule`);
+    if (!res.ok) throw new Error('Failed to fetch course sessions');
+    const c = await res.json();
+    const credits = Number(c.credits);
+    return {
+        code: c.code,
+        number: c.number,
+        name: c.name,
+        rating: c.rating,
+        reviewCount: c.review_count ?? 0,
+        credits: Number.isFinite(credits) ? credits : undefined,
+        sessions: (c.sessions ?? []).map((s: any) => ({
+            days: s.days,
+            startTime: s.start_time,
+            endTime: s.end_time,
+            isLab: !!s.is_lab,
+        })),
+    };
 }
 
 export async function searchCourses(query: string, signal?: AbortSignal): Promise<CourseSearchResult[]> {
