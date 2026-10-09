@@ -3,12 +3,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import '@xyflow/react/dist/style.css';
 import '../App.css';
 
-import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields } from '../api/courses';
+import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields, fetchScheduleCourse } from '../api/courses';
 import { Header } from '../components/Header';
 import { CourseNode } from '../components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from '../components/CourseEdge';
 import { NodeDetails } from '../components/NodeDetails';
-import type {CourseDetails} from '../types';
+import { SessionPicker } from '../components/SessionPicker';
+import { SelectedCoursesList } from '../utils/SelectedCoursesList';
+import type { CourseDetails, EligibleCourse, EligibleCourseSession } from '../types';
 import { getNodeProps } from '../utils/NodeInitializer';
 import { getEdgesProps } from '../utils/EdgeInitializer';
 import { CODE_FILTER_THRESHOLD } from '../utils/NodePositionInitializer';
@@ -66,7 +68,21 @@ export function Explore() {
   const [nodeInfo, setNodeInfo] = useState<CourseDetails | null>(null);
   const [detailMode, setDetailMode] = useState(false);
 
-  const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setNodeInfo={setNodeInfo} detailMode={detailMode} setDetailMode={setDetailMode}/>}), [setNodeInfo, detailMode, setDetailMode]);
+  const [sessionChoice, setSessionChoice] = useState<EligibleCourse | null>(null);
+
+  // Load every session the course offers, then let the user pick before anything is added.
+  const handleAddToSchedule = useCallback((course: { code: string; number: string }) => {
+    fetchScheduleCourse(course.code, course.number)
+      .then(setSessionChoice)
+      .catch(console.error);
+  }, []);
+
+  const handleSessionsChosen = useCallback((sessions: EligibleCourseSession[]) => {
+    if (sessionChoice) SelectedCoursesList.getInstance().addCourse(sessionChoice, sessions);
+    setSessionChoice(null);
+  }, [sessionChoice]);
+
+  const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setNodeInfo={setNodeInfo} detailMode={detailMode} setDetailMode={setDetailMode} onAddToSchedule={handleAddToSchedule}/>}), [setNodeInfo, detailMode, setDetailMode, handleAddToSchedule]);
 
   const onNodesChange = useCallback((changes) => setNodeProps((nds) => applyNodeChanges(changes, nds)),
     []);
@@ -152,10 +168,21 @@ export function Explore() {
                         layoutTick={layoutTick}
                       />
                 </ReactFlowProvider>
+                  {credits[fieldIndex] != null && (
+                    <div className='field-credits' aria-label={`${credits[fieldIndex]} credits needed for this field`}>
+                      <span className='field-credits-value'>{credits[fieldIndex]}</span>
+                      <span className='field-credits-label'>credits required</span>
+                    </div>
+                  )}
         </motion.div>
         <AnimatePresence>
         { detailMode && nodeInfo != null && (
             <NodeDetails key={`${nodeInfo.code}${nodeInfo.number}`} nodeInfo={nodeInfo} onClose={() => setDetailMode(false)} />
+            )}
+        </AnimatePresence>
+        <AnimatePresence>
+        { sessionChoice != null && (
+            <SessionPicker course={sessionChoice} onChoose={handleSessionsChosen} onClose={() => setSessionChoice(null)} />
             )}
         </AnimatePresence>
     </>
