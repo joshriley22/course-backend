@@ -5,4 +5,3 @@ class MajorSessionCreate(BaseModel):
     long_name: str
     fields: list[str]
     courses: list[int]
-

@@ -20,6 +20,10 @@ class ClassService:
             class_instance.professor_name,  # ← swap these two
         )
 
+    def mark_single_day_labs(self, session):
+
+        return self.repo.mark_single_day_labs(session)
+
     def get_classes_by_professor(self, session, professor_name):
 
         return self.repo.get_classes_by_professor(session, professor_name)

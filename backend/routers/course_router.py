@@ -149,6 +149,15 @@ def get_course_uuid(course_code: str, course_number: str):
 
     return {"uuid": uuid}
 
+@router.get("/courses/{course_code}/{course_number}/schedule")
+def get_schedule_course(course_code: str, course_number: str):
+
+    if not course_exists(course_code, course_number):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=course_code + course_number + "not found!")
+
+    with db.get_session() as session:
+        return service.get_schedule_course(session, course_code, course_number)
+
 @router.get("/courses/{course_code}/{course_number}/children")
 def get_children(course_code: str, course_number: str):
 

@@ -98,3 +98,7 @@ class CourseService:
 
         return self.repo.get_eligible_next_courses(session, course_taken_list, elective_list, major_list)
 
+    def get_schedule_course(self, session, code, number):
+
+        return self.repo.get_schedule_course(session, code, number)
+

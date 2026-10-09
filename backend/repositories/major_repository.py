@@ -51,17 +51,3 @@ class MajorRepository:
         fields = record["fields"] if record and record["fields"] else []
         credits = record["credits"] if record and record["credits"] else []
         return {"fields": fields, "credits": credits}
-
-    def get_taken_field_courses(self, session, major_name, field, course_taken_list):
-
-        query = """
-        MATCH (t:Course) WHERE t.uuid IN $course_taken_list
-        WITH collect(DISTINCT t.code + ' ' + t.number) AS taken
-        MATCH (:Major {name: $major_name})-[:COURSE_OF {relationship: $field}]->(c:Course)
-        WHERE c.code + ' ' + c.number IN taken
-        RETURN DISTINCT c.code AS code, c.number AS number, c.name AS name, c.credits AS credits
-        ORDER BY code, number
-        """
-
-        result = session.run(query, major_name=major_name, field=field, course_taken_list=course_taken_list)
-        return [record.data() for record in result]

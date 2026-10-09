@@ -18,6 +18,23 @@ class ClassRepository:
 
         return result.single()
 
+    def mark_single_day_labs(self, session):
+        query = """
+            MATCH (lab:Class)-[:SESSION_OF]->(course:Course)
+            WHERE lab.days =~ '(Mo|Tu|We|Th|Fr|Sa|Su)'
+              AND coalesce(lab.is_lab, false) = false
+              AND EXISTS {
+                  MATCH (lecture:Class)-[:SESSION_OF]->(course)
+                  WHERE lecture.days =~ '(Mo|Tu|We|Th|Fr|Sa|Su){2,}'
+              }
+            SET lab.is_lab = true
+            RETURN count(lab) AS marked
+            """
+
+        result = session.run(query)
+
+        return result.single()["marked"]
+
     def get_classes_by_professor(self, session, professor_name):
         query = """
         MATCH (:Professor {name:$professor_name})-[:PROFESSOR_OF]->(c:Class)

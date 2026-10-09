@@ -273,4 +273,23 @@ class CourseRepository:
 
         return [record.data() for record in result]
 
+    def get_schedule_course(self, session, code, number):
+        query = """
+        MATCH (course:Course {code:$code, number:$number})
+        OPTIONAL MATCH (c:Class)-[:SESSION_OF]->(course)
+        WITH course, collect(DISTINCT {
+            days: c.days, start_time: c.start_time, end_time: c.end_time,
+            is_lab: coalesce(c.is_lab, false)
+        }) AS sessions
+        RETURN course.code AS code, course.number AS number, course.name AS name,
+               course.rating AS rating, course.credits AS credits, sessions,
+               size([(course)-[:REVIEW]-(:Review) | 1]) AS review_count
+        """
+
+        result = session.run(query, code=code, number=number)
+
+        response = result.single()
+
+        return response.data() if response is not None else None
+
 
