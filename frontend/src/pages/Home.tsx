@@ -8,7 +8,8 @@ import { CourseSearchPanel } from '../components/CourseSearchPanel';
 import { NodeDetails } from '../components/NodeDetails';
 import type { ReviewSummary } from '../components/NodeDetails';
 import { SessionPicker } from '../components/SessionPicker';
-import { courseKeyOf, CREDIT_CAP, sessionGroups } from '../utils/ScheduleFormatter';
+import { courseKeyOf } from '../utils/ScheduleFormatter';
+import { SelectedCoursesList, useSelectedCourses } from '../utils/SelectedCoursesList';
 import { pageTransition } from '../utils/pageTransition';
 import type { CourseDetails, EligibleCourse, EligibleCourseSession } from '../types';
 import '../App.css';
@@ -18,7 +19,7 @@ export function Home() {
     const [eligibleCourses, setEligibleCourses] = useState<EligibleCourse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedCourses, setSelectedCourses] = useState<EligibleCourse[]>([]);
+    const selectedCourses = useSelectedCourses();
 
     const [nodeInfo, setNodeInfo] = useState<CourseDetails | null>(null);
     const [detailMode, setDetailMode] = useState(false);
@@ -57,48 +58,31 @@ export function Home() {
             .catch(console.error);
     }, []);
 
-    // Selected courses keep only the sessions the user chose (one lecture, one lab/discussion).
-    const addWithSessions = useCallback((course: EligibleCourse, sessions: EligibleCourseSession[]) => {
-        setSelectedCourses((prev) => {
-            const key = courseKeyOf(course);
-            if (prev.some((c) => courseKeyOf(c) === key)) return prev;
-            const currentCredits = prev.reduce((sum, c) => sum + (c.credits ?? 0), 0);
-            if (currentCredits + (course.credits ?? 0) > CREDIT_CAP) return prev;
-            return [...prev, { ...course, sessions }];
-        });
-    }, []);
-
+    // Adding always goes through the session picker first; selected courses keep only
+    // the sessions the user chose (one lecture, one lab/discussion).
     const handleToggleSelected = useCallback((course: EligibleCourse) => {
-        const key = courseKeyOf(course);
-        if (selectedCourses.some((c) => courseKeyOf(c) === key)) {
-            setSelectedCourses((prev) => prev.filter((c) => courseKeyOf(c) !== key));
+        const store = SelectedCoursesList.getInstance();
+        if (store.isSelected(course)) {
+            store.removeCourse(course);
             return;
         }
-        const { lectures, labs } = sessionGroups(course.sessions);
-        if (lectures.length <= 1 && labs.length <= 1) {
-            addWithSessions(course, [...lectures, ...labs]);
-        } else {
-            setSessionChoice(course);
-        }
-    }, [selectedCourses, addWithSessions]);
+        setSessionChoice(course);
+    }, []);
 
     const handleSessionsChosen = useCallback((sessions: EligibleCourseSession[]) => {
-        if (sessionChoice) addWithSessions(sessionChoice, sessions);
+        if (sessionChoice) SelectedCoursesList.getInstance().addCourse(sessionChoice, sessions);
         setSessionChoice(null);
-    }, [sessionChoice, addWithSessions]);
+    }, [sessionChoice]);
 
     const handleRemove = useCallback((course: EligibleCourse) => {
-        const key = courseKeyOf(course);
-        setSelectedCourses((prev) => prev.filter((c) => courseKeyOf(c) !== key));
+        SelectedCoursesList.getInstance().removeCourse(course);
     }, []);
 
     const handleReviewPosted = useCallback((course: { code: string; number: string }, summary: ReviewSummary) => {
         const key = courseKeyOf(course);
-        const update = (list: EligibleCourse[]) => list.map((c) => (
-            courseKeyOf(c) === key ? { ...c, reviewCount: summary.reviewCount, rating: summary.rating } : c
-        ));
-        setEligibleCourses(update);
-        setSelectedCourses(update);
+        const patch = { reviewCount: summary.reviewCount, rating: summary.rating };
+        setEligibleCourses((list) => list.map((c) => (courseKeyOf(c) === key ? { ...c, ...patch } : c)));
+        SelectedCoursesList.getInstance().updateCourse(course, patch);
     }, []);
 
     const handleScheduleSelect = useCallback((course: { code: string; number: string }) => openDetails(course), [openDetails]);
