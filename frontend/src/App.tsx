@@ -24,7 +24,7 @@ function Layout() {
     }, [takenCoursesReady]);
 
     return (
-        <div id='body-container' className='flex items-center justify-center viewport-overlay'>
+        <div id='body-container' className='flex items-center viewport-overlay'>
             <Sidebar transparent={location.pathname === '/login'} />
             <AnimatePresence mode='wait'>
                 <div key={location.pathname} style={{ display: 'contents' }}>
