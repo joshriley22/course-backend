@@ -45,6 +45,30 @@
   color: var(--gray-600);
 }
 
+.profile-link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--blue-700);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.profile-link-btn:hover {
+  color: var(--blue-900);
+}
+
+.profile-link-btn:focus-visible {
+  outline: 2px solid var(--blue-700);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .profile-majors-empty {
   font-size: 14px;
   font-weight: 600;

@@ -134,6 +134,9 @@ function ProfileContent({ username }: { username: string }) {
                     <div className='profile-majors flex flex-row items-center justify-between'>
                         <div className='profile-majors-list flex flex-row items-center'>
                             <span className='profile-majors-label'>My majors:</span>
+                            <button type='button' className='profile-link-btn' onClick={() => setAddMajorOpen(true)}>
+                                Add major(s)
+                            </button>
                             {selectedMajors.length === 0 ? (
                                 <span className='profile-majors-empty'>None</span>
                             ) : (
@@ -154,9 +157,6 @@ function ProfileContent({ username }: { username: string }) {
                                 </ul>
                             )}
                         </div>
-                        <button type='button' className='profile-primary-btn' onClick={() => setAddMajorOpen(true)}>
-                            Add major(s)
-                        </button>
                     </div>
                 </section>
 
