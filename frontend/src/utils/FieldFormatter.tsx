@@ -135,8 +135,43 @@ const FIELD_LABELS: Record<string, string> = {
     upper: 'Upper-Level Electives',
     values: 'Values, Culture & History',
     workshop: 'Introductory History Workshop',
+    // sub-fields, and the fields they belong to
+    abstractalgebra: 'Abstract Algebra',
+    archaeology: 'Archaeology',
+    biology: 'Biology',
+    calc2: 'Calculus II',
+    calcstats: 'Calculus or Statistics',
+    coreareas: 'Core Areas',
+    diffeq: 'Differential Equations',
+    distributionreq: 'Distribution Requirements',
+    dsfoundation: 'Foundation of Data Science',
+    fundamentals: 'Fundamentals',
+    interdisciplinary: 'Interdisciplinary Core',
+    intermicro: 'Intermediate Microeconomics',
+    introstats: 'Introductory Statistics',
+    latinamerica: 'Latin American Literature & Culture',
+    law: 'Commerce Law',
+    learningareas: 'Learning Areas',
+    linalg: 'Linear Algebra',
+    linguistic: 'Linguistic',
+    performancereq: 'Performance Requirement',
+    realanalysis: 'Real Analysis',
+    required: 'Required Courses',
+    restricted: 'Restricted Electives',
+    sciencefoundation: 'Science Foundation',
+    secondyear: 'Second Year',
+    sociocultural: 'Sociocultural',
+    spain: 'Spanish Literature & Culture',
+    statistics: 'Statistics',
+    thirdyear: 'Third Year',
 };
 
+const label = (key: string) => FIELD_LABELS[key] ?? key;
+
+// Sub-field keys look like "linalg (core)" and are shown as "Linear Algebra (Core)"
 export function formatFields(fieldList: string[]) : string[] {
-    return fieldList.map((field) => FIELD_LABELS[field] ?? field);
+    return fieldList.map((field) => {
+        const sub = field.match(/^(.+) \((.+)\)$/);
+        return sub ? `${label(sub[1])} (${label(sub[2])})` : label(field);
+    });
 }
