@@ -3,9 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import '@xyflow/react/dist/style.css';
 import '../App.css';
 
-import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajorRelEdges, fetchMajors, fetchFields } from '../api/courses';
+import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields } from '../api/courses';
 import { Header } from '../components/Header';
-import { CourseNode, SIDE_HANDLES } from '../components/CourseNode';
+import { CourseNode } from '../components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from '../components/CourseEdge';
 import { NodeDetails } from '../components/NodeDetails';
 import type {CourseDetails} from '../types';
@@ -19,7 +19,6 @@ import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges, Backgroun
 import './Explore.css';
 
 const edgeTypes = { courseEdge: CourseEdge, coprereqEdge: CoPrereqEdge };
-const MAJOR_REL_EDGE_LIMIT = 3;
 
 function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick }) {
   const { fitView } = useReactFlow();
@@ -56,10 +55,11 @@ function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNod
 
 export function Explore() {
   const [nodeProps, setNodeProps] = useState([]);
-  const [courseEdgeProps, setCourseEdgeProps] = useState([]);
-  const [majorRelEdgeProps, setMajorRelEdgeProps] = useState([]);
+  const [edgeProps, setEdgeProps] = useState([]);
   const [majors, setMajors] = useState<string[]>([]);
   const [fields, setFields] = useState<string[]>([]);
+  // Credits each field needs, aligned with `fields`
+  const [credits, setCredits] = useState<number[]>([]);
   const [majorIndex, setMajorIndex] = useState(0);
   const [fieldIndex, setFieldIndex] = useState(0);
   const [codeIndex, setCodeIndex] = useState(0);
@@ -86,7 +86,11 @@ export function Explore() {
       if(majors.length == 0) return;
       let stale = false;
       fetchFields(majors[majorIndex])
-        .then((fields) => { if (!stale) setFields(fields); })
+        .then(({ fields, credits }) => {
+            if (stale) return;
+            setFields(fields);
+            setCredits(credits);
+        })
         .catch(console.error);
       setFieldIndex(0);
       return () => { stale = true; };
@@ -101,34 +105,15 @@ export function Explore() {
        .then((edges) => {
            if (stale) return;
            setNodeProps(getNodeProps(edges));
-           setCourseEdgeProps(getEdgesProps(edges));
+           setEdgeProps(getEdgesProps(edges));
            setCodeIndex(0);
            })
-       .catch(console.error);
-     fetchMajorRelEdges(majors[majorIndex], fields[fieldIndex])
-       .then((edges) => { if (!stale) setMajorRelEdgeProps(getEdgesProps(edges)); })
        .catch(console.error);
      return () => { stale = true; };
    }, [majors, majorIndex, fields, fieldIndex]);
 
   const handlePrev = useCallback((set, list: string[]) => set((i) => i == 0 ? list.length - 1 : i - 1), []);
   const handleNext = useCallback((set, list: string[]) => set((i) => i == list.length - 1 ? 0 : i + 1), []);
-
-  // Major relationship edges connect to the facing sides of their nodes, recomputed as nodes move.
-  const sidedMajorRelEdgeProps = useMemo(() => {
-    const xById = new Map(nodeProps.map((n) => [n.id, n.position.x]));
-    return majorRelEdgeProps.map((e) => {
-      const sourceX = xById.get(e.source);
-      const targetX = xById.get(e.target);
-      const leftToRight = sourceX === undefined || targetX === undefined || sourceX <= targetX;
-      return {
-        ...e,
-        sourceHandle: leftToRight ? SIDE_HANDLES.rightSource : SIDE_HANDLES.leftSource,
-        targetHandle: leftToRight ? SIDE_HANDLES.leftTarget : SIDE_HANDLES.rightTarget,
-      };
-    });
-  }, [majorRelEdgeProps, nodeProps]);
-  const edgeProps = useMemo(() => courseEdgeProps.concat(sidedMajorRelEdgeProps), [courseEdgeProps, sidedMajorRelEdgeProps]);
 
   const codes = useMemo(
     () => Array.from(new Set(nodeProps.map((n) => n.data.code))).sort(),
