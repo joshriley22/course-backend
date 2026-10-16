@@ -267,6 +267,7 @@ class CourseRepository:
                electives_satisfied, avg_professor_rating, next_count, sessions,
                size([(candidate)-[:REVIEW]-(:Review) | 1]) AS review_count
         ORDER BY rating DESC, integration_satisfied DESC, electives_satisfied DESC, avg_professor_rating DESC, next_count DESC
+        LIMIT 20
         """
 
         result = session.run(query, course_taken_list=course_taken_list, elective_list=elective_list, major_list=major_list)
