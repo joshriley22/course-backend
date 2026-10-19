@@ -22,6 +22,11 @@ export class CoursesTakenList {
     }
 
 
+    public hasCourse(uuid: string): boolean {
+        return this.courses.includes(uuid);
+    }
+
+
     public getCourses(): string[] {
         return this.courses;
     }

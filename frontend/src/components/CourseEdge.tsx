@@ -65,8 +65,6 @@ export interface CourseEdgeProps {
     source: string
     target: string
     type: string
-    sourceHandle?: string
-    targetHandle?: string
     }
 
 export function CourseEdge(props: EdgeProps) {
