@@ -58,9 +58,6 @@ export function CourseSearchPanel({
                         aria-label='Search courses'
                     />
                 </div>
-                <div className='course-search-modes flex flex-row items-center'>
-                    <span className='course-search-mode-chip'>Search By Recommended</span>
-                </div>
             </div>
 
             <div className='course-search-panel-scroll flex flex-col'>

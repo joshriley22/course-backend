@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { Position, Handle, useReactFlow } from '@xyflow/react';
-import { motion, MotionConfig } from 'framer-motion';
+import { motion, MotionConfig, AnimatePresence } from 'framer-motion';
 import { addTakenCourse, fetchCourseInfo, fetchCourseUuid } from '../api/courses.ts';
 import { CoursesTakenList, loadTakenCourses } from '../utils/CoursesTakenList.ts';
 import { getUsername } from '../utils/auth.ts';
@@ -138,7 +138,7 @@ export function CourseNode(
 
 
             <Handle type="target" className='hidden-visibility' position={Position.Top} />
-            <motion.div className='course-node-body flex flex-col justify-between'>
+            <motion.div className='course-node-body flex flex-col'>
                 <div id='course-title' className='text-left'>
                     <span>{name}<br></br>({code} {number})</span>
                 </div>
@@ -146,8 +146,14 @@ export function CourseNode(
                     <StarRating rating={rating} />
                     <span className='course-rating-value'>{rating}/5</span>
                 </div>
+            <AnimatePresence initial={false}>
             {opened && (
-                <motion.div className='course-node-actions flex flex-col items-center justify-center' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
+                <motion.div className='course-node-actions-clip'
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ height: { duration: ANIMATION_DURATION }, opacity: { duration: ANIMATION_DURATION + 0.3 } }}>
+                <div className='course-node-actions flex flex-col items-center justify-center'>
                     <button className='course-node-details-btn nodrag' onClick={ (e) => {e.stopPropagation(); setDetailMode(true); loadCourseInfo(code, number);} }>More Details</button>
                     <button
                         className='course-node-details-btn course-node-schedule-btn nodrag'
@@ -161,8 +167,10 @@ export function CourseNode(
                         onClick={ (e) => {e.stopPropagation(); addCourseToTaken(code, number);} }>
                         {taken ? 'Taken' : 'Mark as Taken'}
                     </button>
+                </div>
                 </motion.div>
                     )}
+            </AnimatePresence>
                 </motion.div>
                 <Handle type="source" className='hidden-visibility' position={Position.Bottom} />
             </motion.div>
