@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { Position, Handle, useReactFlow } from '@xyflow/react';
 import { motion, MotionConfig } from 'framer-motion';
-import { fetchCourseInfo, fetchCourseUuid } from '../api/courses.ts';
-import { CoursesTakenList } from '../utils/CoursesTakenList.ts';
+import { addTakenCourse, fetchCourseInfo, fetchCourseUuid } from '../api/courses.ts';
+import { CoursesTakenList, loadTakenCourses } from '../utils/CoursesTakenList.ts';
+import { getUsername } from '../utils/auth.ts';
+import { useSelectedCourses } from '../utils/SelectedCoursesList.ts';
+import { courseKeyOf } from '../utils/ScheduleFormatter.ts';
 import { StarRating } from './StarRating';
 import type { CourseData, CourseDetails, PrerequisiteRelationship } from '../types';
 import './CourseNode.css';
@@ -61,24 +64,21 @@ export class CourseNodeData {
         setNodeInfo?: (nodeInfo: CourseDetails) => void;
         detailMode : boolean;
         setDetailMode : (detailMode: boolean) => void;
+        onAddToSchedule?: (course: CourseData) => void;
     }
 
 
 const HOVER_Z_INDEX = 1000;
-
-export const SIDE_HANDLES = {
-    leftSource: 'left-source',
-    leftTarget: 'left-target',
-    rightSource: 'right-source',
-    rightTarget: 'right-target',
-} as const;
-
 export function CourseNode(
-    { id, data, setNodeInfo, detailMode, setDetailMode }: CourseNodeProps) {
+    { id, data, setNodeInfo, detailMode, setDetailMode, onAddToSchedule }: CourseNodeProps) {
     const { code, number, name, rating } = data;
     const ANIMATION_DURATION = 0.2;
+    const scheduled = useSelectedCourses();
+    const isScheduled = scheduled.some((c) => courseKeyOf(c) === courseKeyOf(data));
 
     const [opened, setOpened] = useState<boolean>(false);
+    const [uuid, setUuid] = useState<string | null>(null);
+    const [taken, setTaken] = useState<boolean>(false);
     const { updateNode } = useReactFlow();
 
     const loadCourseInfo = async (code: string, number: string) => {
@@ -90,12 +90,32 @@ export function CourseNode(
                 }
         }
 
+    // Look up the uuid the first time the card opens so the button can show whether it's already taken
+    useEffect(() => {
+        if (!opened || uuid != null) return;
+        let stale = false;
+        fetchCourseUuid(code, number)
+            .then((courseUuid) => {
+                if (stale) return;
+                setUuid(courseUuid);
+                setTaken(CoursesTakenList.getInstance().hasCourse(courseUuid));
+            })
+            .catch(() => console.error('Failed to retrieve course uuid'));
+        return () => { stale = true; };
+    }, [opened, uuid, code, number]);
+
     const addCourseToTaken = async (code: string, number: string) => {
         try {
-            const uuid = await fetchCourseUuid(code, number);
-            CoursesTakenList.getInstance().addCourse(uuid);
+            const username = getUsername();
+            if (username) {
+                await addTakenCourse(username, code, number);
+                await loadTakenCourses(username);
+            } else {
+                CoursesTakenList.getInstance().addCourse(uuid ?? await fetchCourseUuid(code, number));
+            }
+            setTaken(true);
             } catch(err) {
-                console.error('Failed to retrieve course uuid');
+                console.error('Failed to add course to taken list');
                 }
         }
 
@@ -103,8 +123,7 @@ export function CourseNode(
         <div className='course-node-wrapper flex flex-col items-center justify-center'>
         <MotionConfig transition={{ ease: 'easeOut', duration: ANIMATION_DURATION }}>
             <motion.div className='course-node-card flex flex-col relative'
-               animate={{ height: opened ? 178 : 138, scale: opened ? 1.06 : 1 }}
-               onClick={ () => addCourseToTaken(code, number) }
+               animate={{ height: opened ? 262 : 138, scale: opened ? 1.06 : 1 }}
                onHoverStart={ () => {
                    setOpened(true);
                    updateNode(id, (node) => ({ style: { ...node.style, zIndex: HOVER_Z_INDEX } }));
@@ -128,18 +147,24 @@ export function CourseNode(
                     <span className='course-rating-value'>{rating}/5</span>
                 </div>
             {opened && (
-                <motion.div className='items-center justify-center' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
-                    <button className='course-node-details-btn' onClick={ (e) => {e.stopPropagation(); setDetailMode(true); loadCourseInfo(code, number);} }>More Details</button>
+                <motion.div className='course-node-actions flex flex-col items-center justify-center' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: ANIMATION_DURATION + 0.1 }}>
+                    <button className='course-node-details-btn nodrag' onClick={ (e) => {e.stopPropagation(); setDetailMode(true); loadCourseInfo(code, number);} }>More Details</button>
+                    <button
+                        className='course-node-details-btn course-node-schedule-btn nodrag'
+                        disabled={isScheduled}
+                        onClick={ (e) => {e.stopPropagation(); onAddToSchedule?.(data);} }>
+                        {isScheduled ? 'Added' : 'Add to Schedule'}
+                    </button>
+                    <button
+                        className='course-node-details-btn course-node-schedule-btn nodrag'
+                        disabled={taken}
+                        onClick={ (e) => {e.stopPropagation(); addCourseToTaken(code, number);} }>
+                        {taken ? 'Taken' : 'Mark as Taken'}
+                    </button>
                 </motion.div>
                     )}
                 </motion.div>
                 <Handle type="source" className='hidden-visibility' position={Position.Bottom} />
-                {/* Side handles for major relationship edges. Kept after the top/bottom handles so edges
-                    without an explicit handle id still default to top/bottom. */}
-                <Handle type="source" id={SIDE_HANDLES.leftSource} className='hidden-visibility' position={Position.Left} />
-                <Handle type="target" id={SIDE_HANDLES.leftTarget} className='hidden-visibility' position={Position.Left} />
-                <Handle type="source" id={SIDE_HANDLES.rightSource} className='hidden-visibility' position={Position.Right} />
-                <Handle type="target" id={SIDE_HANDLES.rightTarget} className='hidden-visibility' position={Position.Right} />
             </motion.div>
         </MotionConfig>
     </div>
