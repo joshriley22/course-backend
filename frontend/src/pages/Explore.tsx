@@ -5,6 +5,7 @@ import '../App.css';
 
 import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields, fetchScheduleCourse } from '../api/courses';
 import { Header } from '../components/Header';
+import { MajorSearch } from '../components/MajorSearch';
 import { CourseNode } from '../components/CourseNode';
 import { CourseEdge, CoPrereqEdge } from '../components/CourseEdge';
 import { NodeDetails } from '../components/NodeDetails';
@@ -150,7 +151,9 @@ export function Explore() {
   return (
     <>
             <motion.div id='graph-container' className='main-content flex flex-col items-center full-width full-height' {...pageTransition}>
-                  <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} tier='major' />
+                  <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} tier='major'>
+                    <MajorSearch majors={majors} onSelect={(major) => setMajorIndex(majors.indexOf(major))} />
+                  </Header>
                   <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} tier='field' />
                   {codes.length >= CODE_FILTER_THRESHOLD && (
                     <Header codes={codes} currentIndex={codeIndex} onPrev={() => handlePrev(setCodeIndex, codes)} onNext={() => handleNext(setCodeIndex, codes)} tier='code' />

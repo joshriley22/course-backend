@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, MotionConfig } from 'framer-motion';
 import { searchCourses } from '../api/courses';
 import { courseKeyOf } from '../utils/ScheduleFormatter';
+import { SearchIcon } from './SearchIcon';
 import type { CourseSearchResult } from '../types';
 import './Picker.css';
 
@@ -20,15 +21,6 @@ export interface CoursePickerProps {
 }
 
 const NO_KEYS = new Set<string>();
-
-function SearchIcon() {
-    return (
-        <svg viewBox='0 0 20 20' width='16' height='16' aria-hidden='true'>
-            <circle cx='8.5' cy='8.5' r='5.5' fill='none' stroke='currentColor' strokeWidth='1.75' />
-            <path d='M16 16l-3.8-3.8' stroke='currentColor' strokeWidth='1.75' strokeLinecap='round' />
-        </svg>
-    );
-}
 
 function CheckIcon() {
     return (

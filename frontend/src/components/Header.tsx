@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import './Header.css';
 
 interface HeaderProps {
@@ -6,14 +7,17 @@ interface HeaderProps {
   onPrev: () => void;
   onNext: () => void;
   tier: 'major' | 'field' | 'code';
+  // Extra controls pinned inside the bar without shifting the centered arrows
+  children?: ReactNode;
 }
 
-export function Header({ codes, currentIndex, onPrev, onNext, tier }: HeaderProps) {
+export function Header({ codes, currentIndex, onPrev, onNext, tier, children }: HeaderProps) {
 
     const code = codes[currentIndex];
 
   return (
     <header className={`header-bar header-bar--${tier} flex items-center justify-center`}>
+      {children}
       <button
         onClick={onPrev}
         disabled={currentIndex === 0}
