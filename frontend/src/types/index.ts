@@ -55,6 +55,7 @@ export interface EligibleCourseSession {
   days: string;
   startTime: string;
   endTime: string;
+  isLab?: boolean;
   startsAfter10?: boolean;
   endsBefore5?: boolean;
   avoidsLunch?: boolean;
@@ -87,6 +88,18 @@ export interface CourseSearchResult {
   name: string;
   rating?: number | null;
   credits?: string | number | null;
+}
+
+// A major's short name (its id, e.g. "CS (Engineering)") and its long name (e.g. "Computer Science (Engineering)")
+export interface MajorName {
+  name: string;
+  longName: string;
+}
+
+// A major's fields and the credits each needs; credits[i] goes with fields[i]
+export interface MajorFields {
+  fields: string[];
+  credits: number[];
 }
 
 export interface CourseReview {
