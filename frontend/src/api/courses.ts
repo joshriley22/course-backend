@@ -1,4 +1,4 @@
-import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview, MajorFields, RecommendationResult } from '../types';
+import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview, MajorFields, MajorName, RecommendationResult } from '../types';
 
 export async function fetchCodes(): Promise<string[]> {
   const res = await fetch('/courses/codes');
@@ -45,11 +45,17 @@ export async function fetchCoPrereqEdges(major: string, field: string): Promise<
   }));
   }
 
-export async function fetchMajors(): Promise<string[]> {
+export async function fetchMajorNames(): Promise<MajorName[]> {
     const res = await fetch('/majors');
     if (!res.ok) throw new Error('Failed to fetch majors');
-    const data: { major: string }[] = await res.json();
-    return data.map((d) => d.name).sort();
+    const data: { name: string; long_name: string | null }[] = await res.json();
+    return data
+        .map((d) => ({ name: d.name, longName: d.long_name ?? d.name }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+export async function fetchMajors(): Promise<string[]> {
+    return (await fetchMajorNames()).map((m) => m.name);
     }
 
 export async function fetchFields(major_name: string): Promise<MajorFields> {
