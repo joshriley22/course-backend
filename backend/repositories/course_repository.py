@@ -274,6 +274,56 @@ class CourseRepository:
 
         return [record.data() for record in result]
 
+    def get_recommendation_candidates(self, session, course_taken_list, major_list, exclude_keys, limit):
+        query = """
+        MATCH (major:Major)-[:COURSE_OF]->(candidate:Course)
+        WHERE major.name IN $major_list
+          AND NOT candidate.uuid IN $course_taken_list
+          AND NOT (candidate.code + toString(candidate.number)) IN $exclude_keys
+          AND NOT EXISTS {
+              MATCH (prereq:Course)-[:PREREQUISITE]->(candidate)
+              WHERE NOT prereq.uuid IN $course_taken_list
+          }
+          AND EXISTS { MATCH (:Class)-[:SESSION_OF]->(candidate) }
+        WITH DISTINCT candidate
+        MATCH (m:Major)-[e:COURSE_OF]->(candidate)
+        WHERE m.name IN $major_list
+        WITH candidate, collect(DISTINCT {major: m.name, field: e.relationship}) AS fields
+        OPTIONAL MATCH (candidate)-[:PREREQUISITE]->(next:Course)
+        WITH candidate, fields, COUNT(DISTINCT next) AS next_count
+        OPTIONAL MATCH (p:Professor)-[:PROFESSOR_OF]->(:Class)-[:SESSION_OF]->(candidate)
+        WITH candidate, fields, next_count, avg(p.rating) AS avg_professor_rating
+        MATCH (session:Class)-[:SESSION_OF]->(candidate)
+        WHERE session.days IS NOT NULL AND session.start_time IS NOT NULL AND session.end_time IS NOT NULL
+        WITH candidate, fields, next_count, avg_professor_rating,
+             collect(DISTINCT {
+                 days: session.days, start_time: session.start_time, end_time: session.end_time,
+                 is_lab: coalesce(session.is_lab, false)
+             }) AS sessions
+        RETURN candidate.code AS code, candidate.number AS number, candidate.name AS name,
+               candidate.rating AS rating, candidate.credits AS credits, fields, next_count,
+               avg_professor_rating, sessions,
+               size([(candidate)-[:REVIEW]-(:Review) | 1]) AS review_count
+        ORDER BY size(fields) DESC, next_count DESC, coalesce(candidate.rating, 0) DESC
+        LIMIT $limit
+        """
+
+        result = session.run(query, course_taken_list=course_taken_list, major_list=major_list,
+                             exclude_keys=exclude_keys, limit=limit)
+
+        return [record.data() for record in result]
+
+    def get_field_progress(self, session, course_taken_list, major_list):
+        query = """
+        MATCH (m:Major)-[e:COURSE_OF]->(c:Course)
+        WHERE m.name IN $major_list AND c.uuid IN $course_taken_list
+        RETURN DISTINCT m.name AS major, e.relationship AS field, c.uuid AS uuid, c.credits AS credits
+        """
+
+        result = session.run(query, course_taken_list=course_taken_list, major_list=major_list)
+
+        return [record.data() for record in result]
+
     def get_schedule_course(self, session, code, number):
         query = """
         MATCH (course:Course {code:$code, number:$number})

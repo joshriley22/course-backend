@@ -1,4 +1,4 @@
-import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview, MajorFields } from '../types';
+import type { CourseEdge, CourseDetails, CourseData, FieldDetails, ClassDetails, PrerequisiteRelationship, TakenCourse, CourseSearchResult, EligibleCourse, CourseReview, PostedReview, MajorFields, RecommendationResult } from '../types';
 
 export async function fetchCodes(): Promise<string[]> {
   const res = await fetch('/courses/codes');
@@ -98,6 +98,58 @@ export async function fetchEligibleNextCourses(courseTakenList: string[], electi
             })),
         };
     });
+}
+
+interface RecommendationResponse {
+    total_credits: number;
+    warning: string | null;
+    courses: {
+        code: string;
+        number: string;
+        name: string;
+        rating: number | null;
+        credits: number;
+        review_count: number | null;
+        sessions: { days: string; start_time: string; end_time: string; is_lab: boolean }[];
+    }[];
+}
+
+/** Asks the backend for the best-scoring 13-18 credit schedule that fits around `selectedCourses`. */
+export async function fetchRecommendations(courseTakenList: string[], majorList: string[], selectedCourses: EligibleCourse[]): Promise<RecommendationResult> {
+    const res = await fetch('/courses/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            course_taken_list: courseTakenList,
+            major_list: majorList,
+            selected_courses: selectedCourses.map((c) => ({
+                code: c.code,
+                number: c.number,
+                credits: c.credits ?? null,
+                sessions: c.sessions.map((s) => ({ days: s.days, start_time: s.startTime, end_time: s.endTime })),
+            })),
+        }),
+    });
+    if (!res.ok) throw new Error('Failed to fetch recommendations');
+    const data: RecommendationResponse = await res.json();
+    return {
+        totalCredits: data.total_credits,
+        warning: data.warning ?? null,
+        courses: data.courses.map((c): EligibleCourse => ({
+            code: c.code,
+            number: c.number,
+            name: c.name,
+            rating: c.rating,
+            reviewCount: c.review_count ?? 0,
+            credits: c.credits,
+            sessions: c.sessions.map((s) => ({
+                days: s.days,
+                startTime: s.start_time,
+                endTime: s.end_time,
+                isLab: s.is_lab,
+            })),
+        })),
+    };
 }
 
 // A single course with every session it offers, shaped for adding to the schedule

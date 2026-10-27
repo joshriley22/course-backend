@@ -70,6 +70,13 @@ export interface EligibleCourse {
   sessions: EligibleCourseSession[];
 }
 
+// A generated schedule to merge into the user's; warning is set when it falls short of the credit minimum
+export interface RecommendationResult {
+  courses: EligibleCourse[];
+  totalCredits: number;
+  warning: string | null;
+}
+
 export interface TakenCourse extends EligibleCourse {
   uuid: string;
 }
