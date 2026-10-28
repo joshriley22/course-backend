@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { fetchEligibleNextCourses, fetchMajors, fetchCourseInfo } from '../api/courses';
+import { fetchEligibleNextCourses, fetchMajors, fetchCourseInfo, fetchRecommendations } from '../api/courses';
 import { CoursesTakenList } from '../utils/CoursesTakenList';
+import { getUsername } from '../utils/auth';
+import { getProfileState } from '../utils/ProfileStore';
 import { WeeklySchedule } from '../components/WeeklySchedule';
 import { SelectedCoursesStrip } from '../components/SelectedCoursesStrip';
 import { CourseSearchPanel } from '../components/CourseSearchPanel';
@@ -15,6 +17,10 @@ import type { CourseDetails, EligibleCourse, EligibleCourseSession } from '../ty
 import '../App.css';
 import './Home.css';
 
+function profileMajorsOf(username: string | null): string[] {
+    return username ? getProfileState(username).majors : [];
+}
+
 export function Home() {
     const [eligibleCourses, setEligibleCourses] = useState<EligibleCourse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,11 +32,16 @@ export function Home() {
     const [focusSection, setFocusSection] = useState<'reviews' | undefined>(undefined);
     const [sessionChoice, setSessionChoice] = useState<EligibleCourse | null>(null);
 
+    const [generating, setGenerating] = useState(false);
+    const [recommendNotice, setRecommendNotice] = useState<string | null>(null);
+
     useEffect(() => {
         let cancelled = false;
         setLoading(true);
         setError(null);
-        fetchMajors()
+        // Prefer the user's own majors; fall back to every major until they pick one on Profile
+        const profileMajors = profileMajorsOf(getUsername());
+        (profileMajors.length > 0 ? Promise.resolve(profileMajors) : fetchMajors())
             .then((majors) => fetchEligibleNextCourses(
                 CoursesTakenList.getInstance().getCourses(),
                 ['elective'],
@@ -85,6 +96,28 @@ export function Home() {
         SelectedCoursesList.getInstance().updateCourse(course, patch);
     }, []);
 
+    // Recommendations fill around whatever is already on the schedule rather than replacing it.
+    const handleGenerate = useCallback(() => {
+        const majors = profileMajorsOf(getUsername());
+        if (majors.length === 0) {
+            setRecommendNotice('Add a major on your Profile to get recommendations.');
+            return;
+        }
+        setGenerating(true);
+        setRecommendNotice(null);
+        const store = SelectedCoursesList.getInstance();
+        fetchRecommendations(CoursesTakenList.getInstance().getCourses(), majors, store.getCourses())
+            .then(({ courses, warning }) => {
+                courses.forEach((course) => store.addCourse(course));
+                setRecommendNotice(warning ?? (courses.length === 0 ? 'No more courses fit around your schedule.' : null));
+            })
+            .catch((err) => {
+                console.error(err);
+                setRecommendNotice('Could not generate recommendations. Try again shortly.');
+            })
+            .finally(() => setGenerating(false));
+    }, []);
+
     const handleScheduleSelect = useCallback((course: { code: string; number: string }) => openDetails(course), [openDetails]);
 
     return (
@@ -100,6 +133,9 @@ export function Home() {
                         totalCredits={totalCredits}
                         onRemove={handleRemove}
                         onShowDetails={(course) => openDetails(course)}
+                        onGenerate={handleGenerate}
+                        generating={generating}
+                        notice={recommendNotice}
                     />
                 </div>
                 <CourseSearchPanel

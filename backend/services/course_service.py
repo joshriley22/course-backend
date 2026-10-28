@@ -98,6 +98,14 @@ class CourseService:
 
         return self.repo.get_eligible_next_courses(session, course_taken_list, elective_list, major_list)
 
+    def get_recommendation_candidates(self, session, course_taken_list, major_list, exclude_keys, limit):
+
+        return self.repo.get_recommendation_candidates(session, course_taken_list, major_list, exclude_keys, limit)
+
+    def get_field_progress(self, session, course_taken_list, major_list):
+
+        return self.repo.get_field_progress(session, course_taken_list, major_list)
+
     def get_schedule_course(self, session, code, number):
 
         return self.repo.get_schedule_course(session, code, number)

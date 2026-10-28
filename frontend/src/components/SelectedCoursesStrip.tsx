@@ -10,6 +10,9 @@ export interface SelectedCoursesStripProps {
     totalCredits: number;
     onRemove: (course: EligibleCourse) => void;
     onShowDetails: (course: EligibleCourse) => void;
+    onGenerate: () => void;
+    generating: boolean;
+    notice: string | null;
 }
 
 function RemoveIcon() {
@@ -20,12 +23,25 @@ function RemoveIcon() {
     );
 }
 
-export function SelectedCoursesStrip({ courses, totalCredits, onRemove, onShowDetails }: SelectedCoursesStripProps) {
+export function SelectedCoursesStrip({ courses, totalCredits, onRemove, onShowDetails, onGenerate, generating, notice }: SelectedCoursesStripProps) {
     return (
         <div className='selected-courses-strip flex flex-col'>
             <div className='selected-courses-strip-caption flex flex-row items-center justify-between'>
-                <h2>Selected Courses</h2>
-                <span className='selected-courses-strip-count'>{totalCredits}/{CREDIT_CAP} credits</span>
+                <div className='selected-courses-strip-title flex flex-row items-center'>
+                    <h2>Selected Courses</h2>
+                    {notice && <span className='selected-courses-strip-notice' role='status'>{notice}</span>}
+                </div>
+                <div className='selected-courses-strip-actions flex flex-row items-center'>
+                    <button
+                        type='button'
+                        className='selected-courses-strip-generate'
+                        onClick={onGenerate}
+                        disabled={generating}
+                    >
+                        {generating ? 'Generating…' : 'Generate Recommendations'}
+                    </button>
+                    <span className='selected-courses-strip-count'>{totalCredits}/{CREDIT_CAP} credits</span>
+                </div>
             </div>
             <div className='selected-courses-strip-scroll flex flex-row'>
                 {courses.length === 0 && (

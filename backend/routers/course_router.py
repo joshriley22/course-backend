@@ -1,9 +1,10 @@
 from fastapi import APIRouter, status, HTTPException
 from backend.db import db
 import backend.logic.course_logic as logic
+import backend.logic.recommendation_logic as recommendation_logic
 from backend.responses.course import Course
 from backend.services.course_service import CourseService
-from backend.schemas.course_schema import CourseCreate, EligibleNextCoursesRequest
+from backend.schemas.course_schema import CourseCreate, EligibleNextCoursesRequest, RecommendationsRequest
 
 router = APIRouter()
 
@@ -49,6 +50,13 @@ def get_eligible_next_courses(request: EligibleNextCoursesRequest):
 
     with db.get_session() as session:
         return service.get_eligible_next_courses(session, request.course_taken_list, request.elective_list, request.major_list)
+
+
+@router.post("/courses/recommendations")
+def get_recommendations(request: RecommendationsRequest):
+
+    with db.get_session() as session:
+        return recommendation_logic.get_recommendations(session, request)
 
 
 @router.get("/courses/{major_name}/{field}/edges")

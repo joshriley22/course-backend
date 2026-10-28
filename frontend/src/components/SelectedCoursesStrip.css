@@ -19,6 +19,45 @@
   color: var(--blue-900);
 }
 
+.selected-courses-strip-title,
+.selected-courses-strip-actions {
+  gap: 10px;
+  min-width: 0;
+}
+
+.selected-courses-strip-notice {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--orange-800);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-courses-strip-generate {
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--blue-700);
+  background: var(--blue-700);
+  color: var(--gray-0);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.selected-courses-strip-generate:hover:not(:disabled) {
+  background: var(--blue-800);
+  border-color: var(--blue-800);
+}
+
+.selected-courses-strip-generate:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 .selected-courses-strip-count {
   font-size: 11px;
   font-weight: 800;
