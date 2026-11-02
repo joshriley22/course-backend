@@ -127,15 +127,15 @@ export function Home() {
                     <WeeklySchedule
                         courses={selectedCourses}
                         onSelectCourse={handleScheduleSelect}
+                        onGenerate={handleGenerate}
+                        generating={generating}
+                        notice={recommendNotice}
                     />
                     <SelectedCoursesStrip
                         courses={selectedCourses}
                         totalCredits={totalCredits}
                         onRemove={handleRemove}
                         onShowDetails={(course) => openDetails(course)}
-                        onGenerate={handleGenerate}
-                        generating={generating}
-                        notice={recommendNotice}
                     />
                 </div>
                 <CourseSearchPanel
