@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import '@xyflow/react/dist/style.css';
 import '../App.css';
 
-import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajors, fetchFields, fetchScheduleCourse } from '../api/courses';
+import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajorNames, fetchFields, fetchScheduleCourse } from '../api/courses';
 import { Header } from '../components/Header';
 import { MajorSearch } from '../components/MajorSearch';
 import { CourseNode } from '../components/CourseNode';
@@ -60,6 +60,8 @@ export function Explore() {
   const [nodeProps, setNodeProps] = useState([]);
   const [edgeProps, setEdgeProps] = useState([]);
   const [majors, setMajors] = useState<string[]>([]);
+  // Major name -> long name, so the search matches either ("CS" or "Computer Science")
+  const [longNames, setLongNames] = useState<Record<string, string>>({});
   const [fields, setFields] = useState<string[]>([]);
   // Credits each field needs, aligned with `fields`
   const [credits, setCredits] = useState<number[]>([]);
@@ -89,11 +91,12 @@ export function Explore() {
     []);
 
   useEffect(() => {
-    fetchMajors()
-      .then((majors) => {
-          const newMajors = majors.filter(course => course != "Arts & Sciences General Requirements" && course != "Engineering General Requirements")
+    fetchMajorNames()
+      .then((majorNames) => {
+          const newMajors = majorNames.map((m) => m.name).filter(course => course != "Arts & Sciences General Requirements" && course != "Engineering General Requirements")
           newMajors.unshift("Arts & Sciences General Requirements", "Engineering General Requirements");
           setMajors(newMajors);
+          setLongNames(Object.fromEntries(majorNames.map((m) => [m.name, m.longName])));
           })
       .catch(console.error);
   }, []);
@@ -152,7 +155,7 @@ export function Explore() {
     <>
             <motion.div id='graph-container' className='main-content flex flex-col items-center full-width full-height' {...pageTransition}>
                   <Header codes={majors} currentIndex={majorIndex} onPrev={() => handlePrev(setMajorIndex, majors)} onNext={() => handleNext(setMajorIndex, majors)} tier='major'>
-                    <MajorSearch majors={majors} onSelect={(major) => setMajorIndex(majors.indexOf(major))} />
+                    <MajorSearch majors={majors} longNames={longNames} onSelect={(major) => setMajorIndex(majors.indexOf(major))} />
                   </Header>
                   <Header codes={formattedFields} currentIndex={fieldIndex} onPrev={() => handlePrev(setFieldIndex, fields)} onNext={() => handleNext(setFieldIndex, fields)} tier='field' />
                   {codes.length >= CODE_FILTER_THRESHOLD && (

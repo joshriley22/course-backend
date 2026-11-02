@@ -30,7 +30,7 @@ class MajorRepository:
 
         query = """
         MATCH (m:Major)
-        RETURN m.name AS name
+        RETURN m.name AS name, m.long_name AS long_name
         """
 
         result = session.run(query)

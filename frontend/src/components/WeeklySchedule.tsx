@@ -28,9 +28,12 @@ function formatHourLabel(minutes: number): string {
 export interface WeeklyScheduleProps {
     courses: ScheduledCourse[];
     onSelectCourse?: (course: ScheduledCourse) => void;
+    onGenerate: () => void;
+    generating: boolean;
+    notice: string | null;
 }
 
-export function WeeklySchedule({ courses, onSelectCourse }: WeeklyScheduleProps) {
+export function WeeklySchedule({ courses, onSelectCourse, onGenerate, generating, notice }: WeeklyScheduleProps) {
     const blocks = useMemo(() => layoutScheduleBlocks(courses), [courses]);
     const courseByKey = useMemo(() => {
         const map = new Map<string, ScheduledCourse>();
@@ -44,6 +47,17 @@ export function WeeklySchedule({ courses, onSelectCourse }: WeeklyScheduleProps)
         <div className='weekly-schedule flex flex-col'>
             <div className='weekly-schedule-caption flex flex-row items-center justify-between'>
                 <h2>Your Schedule</h2>
+                <div className='weekly-schedule-actions flex flex-row items-center'>
+                    {notice && <span className='weekly-schedule-notice' role='status'>{notice}</span>}
+                    <button
+                        type='button'
+                        className='weekly-schedule-generate'
+                        onClick={onGenerate}
+                        disabled={generating}
+                    >
+                        {generating ? 'Generating…' : 'Generate Recommendations'}
+                    </button>
+                </div>
             </div>
             <div className='weekly-schedule-scroll'>
                 <div className='weekly-schedule-grid' style={{ gridTemplateRows: `36px ${gridHeight}px` }}>

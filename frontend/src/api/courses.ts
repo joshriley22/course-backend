@@ -158,7 +158,6 @@ export async function fetchRecommendations(courseTakenList: string[], majorList:
     };
 }
 
-// A single course with every session it offers, shaped for adding to the schedule
 export async function fetchScheduleCourse(code: string, number: string): Promise<EligibleCourse> {
     const res = await fetch(`/courses/${encodeURIComponent(code)}/${encodeURIComponent(number)}/schedule`);
     if (!res.ok) throw new Error('Failed to fetch course sessions');

@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-05T00:00:00Z",
+  "title": "Design System: UVA Course Explorer",
+  "extensions": {
+    "colorMeta": {
+      "orange-500": {
+        "role": "primary",
+        "displayName": "UVA Cavalier Orange",
+        "canonical": "#e57200",
+        "tonalRamp": ["#fef3e8", "#fce0c2", "#fac68f", "#f6a355", "#ef8628", "#e57200", "#c25f00", "#9c4c00", "#7a3c00"]
+      },
+      "blue-700": {
+        "role": "secondary",
+        "displayName": "UVA Jefferson Blue",
+        "canonical": "#232d4b",
+        "tonalRamp": ["#eef1f7", "#d7deea", "#adbcd4", "#7e93b7", "#536d96", "#3a5077", "#2b3c5c", "#232d4b", "#171d33", "#101524"]
+      },
+      "gray-50": {
+        "role": "neutral",
+        "displayName": "Cool Fog",
+        "canonical": "#f8f8f9",
+        "tonalRamp": ["#ffffff", "#f8f8f9", "#eef0f2", "#e1e4e8", "#c9cdd4", "#9aa1ac", "#717886", "#565d6b", "#3d4351", "#262b36"]
+      }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "NodeDetails modal course heading; the largest text in the system." },
+      "body": { "displayName": "Body", "purpose": "Course card text, fact-list values, button labels." },
+      "label": { "displayName": "Label", "purpose": "Pills, badges, tags, section eyebrows, fact-list keys." }
+    },
+    "shadows": [
+      { "name": "ambient-card", "value": "0 1px 2px rgba(23, 29, 51, 0.06)", "purpose": "Resting state of course node cards and mini-graph pills." },
+      { "name": "orange-hover-glow", "value": "0 10px 24px rgba(229, 114, 0, 0.14)", "purpose": "Course card hover lift, tinted toward the focus color." },
+      { "name": "orange-focus-glow-strong", "value": "0 8px 18px rgba(229, 114, 0, 0.32)", "purpose": "Mini-graph centered node emphasis." },
+      { "name": "controls-shadow", "value": "0 6px 20px rgba(23, 29, 51, 0.12)", "purpose": "React Flow zoom controls." },
+      { "name": "modal-shadow", "value": "0 30px 80px rgba(16, 21, 36, 0.35)", "purpose": "NodeDetails panel, the deepest elevation in the system." }
+    ],
+    "motion": [
+      { "name": "ease-standard-fast", "value": "0.15s ease", "purpose": "Default hover/interaction transition (buttons, nav, controls)." },
+      { "name": "ease-standard", "value": "0.2s ease", "purpose": "Card outline/shadow transitions on hover." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Course Node Card",
+      "kind": "card",
+      "refersTo": "course-node-card",
+      "description": "The primary graph card: white surface, blue-tinted outline at rest, orange-tinted outline and glow on hover.",
+      "html": "<div class=\"ds-course-card\"><div class=\"ds-course-card-body\"><span class=\"ds-course-title\">CS 2150 &mdash; Program &amp; Data Representation</span><span class=\"ds-course-rating\">4.2</span><button class=\"ds-course-details-btn\">Details</button></div></div>",
+      "css": ".ds-course-card { border-radius: 18px; width: 250px; background-color: #ffffff; outline: 1.5px solid #d7deea; box-shadow: 0 1px 2px rgba(23,29,51,0.06); transition: outline-color 0.2s ease, box-shadow 0.2s ease; } .ds-course-card:hover { outline-color: #f6a355; box-shadow: 0 10px 24px rgba(229,114,0,0.14); } .ds-course-card-body { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; font-weight: 500; font-size: 15px; color: #171d33; } .ds-course-rating { align-self: flex-start; font-size: 13px; font-weight: 700; color: #c25f00; background: #fef3e8; border-radius: 999px; padding: 3px 9px; } .ds-course-details-btn { width: 100%; height: 34px; border-radius: 10px; border: 1px solid #d7deea; background-color: #eef1f7; color: #232d4b; font-weight: 600; font-size: 13px; transition: background-color 0.15s ease, border-color 0.15s ease; } .ds-course-details-btn:hover { background-color: #232d4b; border-color: #232d4b; color: #ffffff; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Modal primary action button, solid Jefferson Blue.",
+      "html": "<button class=\"ds-btn-primary\">Mark as Taken</button>",
+      "css": ".ds-btn-primary { height: 38px; padding: 0 18px; border-radius: 10px; font-weight: 700; font-size: 13px; background: #232d4b; border: 1px solid #232d4b; color: #ffffff; cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease; } .ds-btn-primary:hover, .ds-btn-primary:focus-visible { background: #171d33; border-color: #171d33; outline: 2px solid #e57200; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Modal secondary/ghost action button; hover turns orange rather than deepening blue.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { height: 38px; padding: 0 18px; border-radius: 10px; font-weight: 700; font-size: 13px; background: #ffffff; border: 1px solid #e1e4e8; color: #565d6b; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease; } .ds-btn-secondary:hover, .ds-btn-secondary:focus-visible { border-color: #f6a355; color: #9c4c00; outline: 2px solid #e57200; outline-offset: 2px; }"
+    },
+    {
+      "name": "Tag / Rating Pill",
+      "kind": "chip",
+      "refersTo": "tag-pill",
+      "description": "Full-pill badge, tinted background with matching dark text of the same hue; used for ratings, tags, course-code badges.",
+      "html": "<span class=\"ds-pill ds-pill--blue\">CS</span> <span class=\"ds-pill ds-pill--orange\">4.2 ★</span>",
+      "css": ".ds-pill { display: inline-block; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 700; } .ds-pill--blue { background: #eef1f7; color: #232d4b; } .ds-pill--orange { background: #fef3e8; color: #c25f00; }"
+    },
+    {
+      "name": "NodeDetails Modal",
+      "kind": "custom",
+      "refersTo": "node-details-panel",
+      "description": "Centered popup over a dimmed/blurred backdrop; the system's signature container for a course's full detail view.",
+      "html": "<div class=\"ds-modal-backdrop\"><div class=\"ds-modal-panel\"><span class=\"ds-modal-code\">CS 2150</span><h1 class=\"ds-modal-title\">Program &amp; Data Representation</h1></div></div>",
+      "css": ".ds-modal-backdrop { position: fixed; inset: 0; background: rgba(16,21,36,0.55); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; } .ds-modal-panel { width: min(94vw, 640px); max-height: 86vh; overflow-y: auto; background: #ffffff; border-radius: 20px; box-shadow: 0 30px 80px rgba(16,21,36,0.35); padding: 34px; } .ds-modal-code { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; color: #9c4c00; background: #fef3e8; border-radius: 999px; padding: 4px 10px; margin-bottom: 10px; } .ds-modal-title { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; color: #101524; line-height: 1.2; }"
+    },
+    {
+      "name": "Mini-Graph Node",
+      "kind": "custom",
+      "refersTo": "mini-graph",
+      "description": "One-hop focus map inside NodeDetails: orange center node, blue neighbor pills.",
+      "html": "<div class=\"ds-mini-graph\"><span class=\"ds-mini-node ds-mini-node--center\">CS 2150</span><span class=\"ds-mini-node ds-mini-node--neighbor\">CS 1110</span></div>",
+      "css": ".ds-mini-graph { position: relative; width: 100%; height: 190px; border-radius: 14px; background: #f8f8f9; border: 1px solid #e1e4e8; overflow: hidden; padding: 12px; display: flex; align-items: center; gap: 12px; } .ds-mini-node { display: inline-flex; align-items: center; justify-content: center; padding: 7px 13px; border-radius: 999px; font-weight: 700; font-size: 12px; box-shadow: 0 1px 2px rgba(23,29,51,0.08); } .ds-mini-node--center { background: #e57200; color: #ffffff; font-size: 13px; padding: 9px 16px; box-shadow: 0 8px 18px rgba(229,114,0,0.32); } .ds-mini-node--neighbor { background: #eef1f7; color: #232d4b; border: 1px solid #d7deea; }"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "sidebar-link",
+      "description": "App shell nav list; orange marks the active route, blue marks hover.",
+      "html": "<div class=\"ds-sidebar\"><div class=\"ds-sidebar-brand\"><span class=\"ds-sidebar-mark\">UVA</span><span class=\"ds-sidebar-name\">Course Explorer</span></div><a class=\"ds-sidebar-link ds-sidebar-link--active\" href=\"#\">Explore</a><a class=\"ds-sidebar-link\" href=\"#\">Home</a></div>",
+      "css": ".ds-sidebar { background-color: #ffffff; box-shadow: inset -1px 0 0 #e1e4e8; padding: 20px 14px; display: flex; flex-direction: column; gap: 8px; } .ds-sidebar-brand { display: flex; align-items: center; gap: 8px; padding: 4px 8px 20px; } .ds-sidebar-mark { background: #e57200; color: #ffffff; font-weight: 800; font-size: 11px; letter-spacing: 0.04em; border-radius: 6px; padding: 3px 6px; } .ds-sidebar-name { font-weight: 700; font-size: 14px; color: #171d33; } .ds-sidebar-link { display: block; padding: 9px 12px; border-radius: 8px; color: #565d6b; font-weight: 500; font-size: 14px; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; } .ds-sidebar-link:hover { background-color: #eef1f7; color: #232d4b; } .ds-sidebar-link--active { background-color: #fef3e8; color: #9c4c00; font-weight: 700; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Wayfinding Graph",
+    "overview": "This is a light, institutional-but-legible system built for reading a prerequisite graph at a glance: a near-white canvas carries the weight, and two UVA hues do the semantic work of telling a student where they are and what's connected. Jefferson Blue is the structural, wayfinding color (chrome, edges, secondary emphasis); Cavalier Orange is reserved for \"you are here\" — the active course, the current focus, the thing demanding attention. Both hues are used as graduated 8-10 step ramps rather than flat swatches, so the same two colors can carry a card's border, a pill's fill, a heading's ink, and a button's hover state without ever feeling like a single flat brand stripe.\n\nThe system is currently proven end-to-end only on the Explore page and its NodeDetails/CourseMiniGraph popup; Sidebar picked up matching nav states. Home and Login have not been visually rebuilt and should not be treated as evidence of a different world — they simply haven't adopted this one yet.",
+    "keyCharacteristics": [
+      "Light neutral ground (white/near-white/warm gray) with color reserved for meaning, not decoration",
+      "Two hues, each as a graduated tint/shade ramp, never used flat",
+      "Pill-shaped tags and rounded-rectangle cards throughout; no sharp corners",
+      "Soft, colored (not black) shadows tied to the nearby accent",
+      "Orange = active/focus/\"you are here\"; Blue = structural/connected/\"related to it\""
+    ],
+    "rules": [
+      { "name": "The Two-Hue Ramp Rule", "body": "Every color in the system traces back to UVA orange, UVA blue, or a neutral gray step — no third accent hue is introduced. Each of the two brand hues is always used as a ramp (multiple tints/shades within one surface), never as a single flat swatch standing alone.", "section": "colors" },
+      { "name": "The Orange-Is-Focus Rule", "body": "Orange marks the single thing the user is currently looking at or acting on (centered node, hover, active nav link, rating). It never marks a merely-related or structural element — that's blue's job.", "section": "colors" },
+      { "name": "The One-Family Rule", "body": "Inter is the only typeface in the system across every weight and role; no serif or display face is introduced for headings.", "section": "typography" },
+      { "name": "The Tinted-Shadow Rule", "body": "No shadow in the system is pure black; every shadow value carries either the blue-ink tint (rgba(23,29,51,...) / rgba(16,21,36,...)) or the orange-focus tint (rgba(229,114,0,...)), matching the element it lifts.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do treat orange as the single \"you are here / active\" marker and blue as the \"structurally connected\" marker; never swap their roles.",
+      "Do use full graduated ramps (50-800/900) for both brand hues rather than one flat swatch per hue.",
+      "Do tint every shadow toward blue-ink or orange-focus rgba values instead of pure black.",
+      "Do keep corners rounded system-wide: pill (999px) for badges/chips, 14-20px for cards and modals, 10px for buttons.",
+      "Do reserve the deep-blue-to-white-to-orange gradient (major/field/code) navigation pattern for hierarchical drill-down breadcrumbs like Explore's tier bar."
+    ],
+    "donts": [
+      "Don't introduce a third accent hue; every color must trace back to the orange ramp, the blue ramp, or the gray neutral scale.",
+      "Don't use sharp/unrounded corners on cards, buttons, or badges — no element in the shipped system uses a 0px radius.",
+      "Don't assume Home or Login already carry this system — as of this build they are unstyled/placeholder and are not evidence of an alternate direction; they are pending adoption, not an exception to it."
+    ]
+  }
+}
