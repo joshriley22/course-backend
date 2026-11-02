@@ -78,6 +78,12 @@
   cursor: pointer;
 }
 
+.major-search-option-long {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
 .major-search-option--active {
   background: var(--orange-50);
   color: var(--orange-700);

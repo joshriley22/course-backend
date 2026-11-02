@@ -5,6 +5,8 @@ import './MajorSearch.css';
 
 interface MajorSearchProps {
     majors: string[];
+    // Major name -> long name; a query matching either finds the major
+    longNames?: Record<string, string>;
     onSelect: (major: string) => void;
 }
 
@@ -14,7 +16,7 @@ const EXPANDED_WIDTH = 260;
 const MIN_EXPANDED_WIDTH = 180;
 const ARROW_GAP = 12;
 
-export function MajorSearch({ majors, onSelect }: MajorSearchProps) {
+export function MajorSearch({ majors, longNames = {}, onSelect }: MajorSearchProps) {
     const rootRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const [openWidth, setOpenWidth] = useState(EXPANDED_WIDTH);
@@ -28,8 +30,11 @@ export function MajorSearch({ majors, onSelect }: MajorSearchProps) {
 
     const matches = useMemo(() => {
         const q = query.trim().toLowerCase();
-        return q ? majors.filter((major) => major.toLowerCase().includes(q)).slice(0, MAX_RESULTS) : [];
-    }, [majors, query]);
+        if (!q) return [];
+        return majors
+            .filter((major) => `${major} ${longNames[major] ?? ''}`.toLowerCase().includes(q))
+            .slice(0, MAX_RESULTS);
+    }, [majors, longNames, query]);
 
     const showResults = focused && query.trim() !== '';
 
@@ -115,6 +120,9 @@ export function MajorSearch({ majors, onSelect }: MajorSearchProps) {
                             onClick={() => choose(major)}
                         >
                             {major}
+                            {longNames[major] && longNames[major] !== major && (
+                                <span className='major-search-option-long'>{longNames[major]}</span>
+                            )}
                         </li>
                     ))}
                 </ul>

@@ -34,7 +34,7 @@ function getNodeRadius(_n: CourseNodeProps): number {
 // The x anchor is weak so overlapping nodes can spread out sideways; the y
 // anchor is strong so dagre's rank (prerequisite depth) stays intact instead
 // of drifting into other ranks as a side effect of collision resolution.
-const ANCHOR_STRENGTH_X = 0.05;
+const ANCHOR_STRENGTH_X = 0.4;
 const ANCHOR_STRENGTH_Y = 0.4;
 const DRAG_ALPHA_TARGET = 0.3;
 // How often (ms) to re-fit the viewport while the simulation is still
@@ -140,7 +140,6 @@ export function useCollisionSimulation(
         }
         simulation.force('collide', forceCollide<SimNode>((d) => d.radius));
         simulation.alpha(Math.max(simulation.alpha(), 0.3)).restart();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodeDimensionsSignature]);
 
     const onNodeDragStart: OnNodeDrag = useCallback((_event, node) => {

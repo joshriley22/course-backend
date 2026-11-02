@@ -2,6 +2,7 @@ import json
 
 import requests
 
+from backend.db_setup.mark_lab_sessions import mark_lab_sessions
 from backend.routers import course_router, class_router
 from backend.schemas.class_schema import ClassSessionCreate
 from backend.schemas.course_schema import CourseCreate
@@ -51,6 +52,8 @@ def initialize_classes(url):
                     for meeting in meetings:
                         class_session = ClassSessionCreate(class_id=class_["class_nbr"], start_time=str(meeting["start_time"]), end_time=str(meeting["end_time"]), days=meeting["days"], enrollment_available=int(class_["enrollment_available"]), is_lab=is_lab, course_code=class_["subject"], course_number=class_["catalog_nbr"], professor_name=meeting["instructor"], elective_status=0)
                         class_router.create_class(class_session)
+
+    mark_lab_sessions()
 
 
 def get_page_count(url):

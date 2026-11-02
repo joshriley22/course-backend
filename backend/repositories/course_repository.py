@@ -57,10 +57,10 @@ class CourseRepository:
             relationship: p1.relationship
         }) AS prereqs,
         collect(DISTINCT { child_code: c3.code,  child_number: c3.number,  child_name: c3.name, child_rating: c3.rating}) AS children
-        MATCH (p:Professor)-[:PROFESSOR_OF]->(c:Class)-[:SESSION_OF]->(c1)
+        OPTIONAL MATCH (p:Professor)-[:PROFESSOR_OF]->(c:Class)-[:SESSION_OF]->(c1)
         WITH c1, fields, prereqs, children,
-        collect(DISTINCT { class_days: c.days, class_start_time: c.start_time,  class_end_time: c.end_time,
-        professor_name: p.name, professor_rating: p.rating })[0..3] AS sessions
+        collect(DISTINCT CASE WHEN c IS NOT NULL THEN { class_days: c.days, class_start_time: c.start_time,  class_end_time: c.end_time,
+        professor_name: p.name, professor_rating: p.rating } END)[0..3] AS sessions
         RETURN c1.name AS course_name, c1.code AS course_code, c1.number AS course_number, c1.credits AS course_credits, fields, prereqs, children, sessions
         """
 
@@ -176,8 +176,10 @@ class CourseRepository:
     def get_course_edges(self, session, major_name, field):
         query = """
             MATCH (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c:Course)
+            WHERE EXISTS { (:Class)-[:SESSION_OF]->(c) }
             OPTIONAL MATCH (c:Course)-[:PREREQUISITE]->(c1:Course)
             WHERE c1.number <> c.number AND (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c1)
+              AND EXISTS { (:Class)-[:SESSION_OF]->(c1) }
             RETURN c.code AS source_code, c.number AS source_number, c.name AS source_name, c.rating AS source_rating,
                    c1.code AS target_code, c1.number AS target_number, c1.name AS target_name, c1.rating AS target_rating
             """
@@ -241,6 +243,7 @@ class CourseRepository:
               MATCH (prereq:Course)-[:PREREQUISITE]->(candidate)
               WHERE NOT prereq.uuid IN $course_taken_list
           }
+          AND EXISTS { MATCH (:Class)-[:SESSION_OF]->(candidate) }
         WITH DISTINCT candidate
         OPTIONAL MATCH (candidate)-[:PREREQUISITE]->(next:Course)
         WITH candidate, COUNT(DISTINCT next) AS next_count
