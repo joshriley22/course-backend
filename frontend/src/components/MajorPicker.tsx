@@ -11,9 +11,16 @@ export interface MajorPickerProps {
     selected: string[];
     onAdd: (major: string) => void;
     onClose: () => void;
+    title?: string;
+    noun?: string;  // plural, lowercase: "majors", "schools"
+    actionLabel?: string;
+    doneLabel?: string;
+    labelOf?: (option: string) => string;
 }
 
 const FILTER_THRESHOLD = 8;
+
+const asIs = (option: string) => option;
 
 function CheckIcon() {
     return (
@@ -39,7 +46,10 @@ function CloseIcon() {
     );
 }
 
-export function MajorPicker({ options, status, selected, onAdd, onClose }: MajorPickerProps) {
+export function MajorPicker({
+    options, status, selected, onAdd, onClose,
+    title = 'Add your major(s)', noun = 'majors', actionLabel = 'Add', doneLabel = 'Added', labelOf = asIs,
+}: MajorPickerProps) {
     const [query, setQuery] = useState('');
 
     useEffect(() => {
@@ -53,8 +63,8 @@ export function MajorPicker({ options, status, selected, onAdd, onClose }: Major
     const showFilter = options.length > FILTER_THRESHOLD;
     const visible = useMemo(() => {
         const q = query.trim().toLowerCase();
-        return q ? options.filter((major) => major.toLowerCase().includes(q)) : options;
-    }, [options, query]);
+        return q ? options.filter((major) => labelOf(major).toLowerCase().includes(q)) : options;
+    }, [options, query, labelOf]);
 
     return (
         <MotionConfig transition={{ ease: 'easeOut', duration: 0.22 }}>
@@ -76,7 +86,7 @@ export function MajorPicker({ options, status, selected, onAdd, onClose }: Major
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className='picker-head flex flex-row items-center justify-between'>
-                        <h2 id='major-picker-title'>Add your major(s)</h2>
+                        <h2 id='major-picker-title'>{title}</h2>
                         <button type='button' className='picker-close' onClick={onClose} aria-label='Close'>
                             <CloseIcon />
                         </button>
@@ -88,22 +98,22 @@ export function MajorPicker({ options, status, selected, onAdd, onClose }: Major
                             <input
                                 type='text'
                                 autoFocus
-                                placeholder='Filter majors'
+                                placeholder={`Filter ${noun}`}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                aria-label='Filter majors'
+                                aria-label={`Filter ${noun}`}
                             />
                         </div>
                     )}
 
                     <div className='picker-results' aria-live='polite'>
-                        {status === 'loading' && <p className='picker-message'>Loading majors&hellip;</p>}
+                        {status === 'loading' && <p className='picker-message'>Loading {noun}&hellip;</p>}
                         {status === 'error' && (
-                            <p className='picker-message picker-message--error'>Couldn&rsquo;t load majors. Try again shortly.</p>
+                            <p className='picker-message picker-message--error'>Couldn&rsquo;t load {noun}. Try again shortly.</p>
                         )}
                         {status === 'ready' && visible.length === 0 && (
                             <p className='picker-message'>
-                                {options.length === 0 ? 'No majors available yet.' : `No majors match “${query.trim()}”.`}
+                                {options.length === 0 ? `No ${noun} available yet.` : `No ${noun} match “${query.trim()}”.`}
                             </p>
                         )}
                         {status === 'ready' && visible.length > 0 && (
@@ -113,7 +123,7 @@ export function MajorPicker({ options, status, selected, onAdd, onClose }: Major
                                     return (
                                         <li key={major} className='picker-row flex flex-row items-center'>
                                             <div className='picker-info flex flex-col'>
-                                                <span className='picker-name'>{major}</span>
+                                                <span className='picker-name'>{labelOf(major)}</span>
                                             </div>
                                             <button
                                                 type='button'
@@ -122,7 +132,7 @@ export function MajorPicker({ options, status, selected, onAdd, onClose }: Major
                                                 onClick={() => onAdd(major)}
                                             >
                                                 {chosen ? <CheckIcon /> : <PlusIcon />}
-                                                {chosen ? 'Added' : 'Add'}
+                                                {chosen ? doneLabel : actionLabel}
                                             </button>
                                         </li>
                                     );

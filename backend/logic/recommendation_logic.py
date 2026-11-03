@@ -6,7 +6,8 @@ from backend.services.major_service import MajorService
 course_service = CourseService()
 major_service = MajorService()
 
-CANDIDATE_POOL = 80      # courses pulled from the graph before scoring
+MAJOR_POOL = 60          # courses pulled from the user's majors before scoring
+SCHOOL_POOL = 30         # courses pulled from their school's general requirements before scoring
 MAX_CANDIDATES = 25      # best-scored courses the scheduler searches over
 MAX_OPTIONS = 6          # session combinations kept per course
 FIELD_DECAY = 0.6        # each further course from one (major, field) is worth this much of the last
@@ -18,6 +19,8 @@ PROFESSOR_WEIGHT = 2.0
 UNLOCKS_WEIGHT = 1.5
 RELEVANCE_WEIGHT = 4.0
 REVIEWS_WEIGHT = 0.5
+IN_MAJOR_WEIGHT = 2.0    # flat bonus for counting toward a major field the user still needs
+SCHOOL_FIELD_WEIGHT = 0.4  # relevance to school-wide requirements counts this much of relevance to majors
 NEUTRAL_RATING = 0.5     # stands in for an unrated course or professor
 MAX_UNLOCKS = 5
 MAX_REVIEWS = 10
@@ -29,6 +32,12 @@ LUNCH_FREE_BONUS = 0.2   # doesn't touch 12:00-14:00
 
 DAY_CODES = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 MINUTES_PER_DAY = 24 * 60
+
+SCHOOL_SUFFIX = ' General Requirements'  # school-wide Majors, e.g. "Engineering General Requirements"
+
+
+def is_school(major):
+    return major.endswith(SCHOOL_SUFFIX)
 
 
 def parse_credits(raw):
@@ -124,12 +133,20 @@ def field_shares(major_fields, progress):
 
 
 def rank_candidates(rows, shares):
-    """Scores each candidate course and expands its sessions into schedulable options, best score first."""
-    relevance = {}
+    """Scores each candidate course and expands its sessions into schedulable options, best score first.
+
+    Courses in the user's majors outrank ones that only cover school requirements: relevance to majors and to
+    school requirements is normalized separately, the school part counting SCHOOL_FIELD_WEIGHT as much, and
+    courses still needed for a major get IN_MAJOR_WEIGHT on top.
+    """
+    major_relevance, school_relevance = {}, {}
     for row in rows:
         keys = {(f['major'], f['field']) for f in row.get('fields') or []}
-        relevance[(row['code'], row['number'])] = min(1.0, sum(shares.get(k, 0.0) for k in keys))
-    top_relevance = max(relevance.values(), default=0.0) or 1.0
+        key = (row['code'], row['number'])
+        major_relevance[key] = min(1.0, sum(shares.get(k, 0.0) for k in keys if not is_school(k[0])))
+        school_relevance[key] = min(1.0, sum(shares.get(k, 0.0) for k in keys if is_school(k[0])))
+    top_major = max(major_relevance.values(), default=0.0) or 1.0
+    top_school = max(school_relevance.values(), default=0.0) or 1.0
 
     candidates = []
     for row in rows:
@@ -142,15 +159,19 @@ def rank_candidates(rows, shares):
         professor = row['avg_professor_rating'] / 5 if row.get('avg_professor_rating') else NEUTRAL_RATING
         unlocks = min(row.get('next_count') or 0, MAX_UNLOCKS) / MAX_UNLOCKS
         reviews = min(row.get('review_count') or 0, MAX_REVIEWS) / MAX_REVIEWS
+        key = (row['code'], row['number'])
+        relevance = (major_relevance[key] / top_major
+                     + SCHOOL_FIELD_WEIGHT * school_relevance[key] / top_school)
         score = (RATING_WEIGHT * rating
                  + PROFESSOR_WEIGHT * professor
                  + UNLOCKS_WEIGHT * unlocks
-                 + RELEVANCE_WEIGHT * relevance[(row['code'], row['number'])] / top_relevance
-                 + REVIEWS_WEIGHT * reviews)
+                 + RELEVANCE_WEIGHT * relevance
+                 + REVIEWS_WEIGHT * reviews
+                 + IN_MAJOR_WEIGHT * (major_relevance[key] > 0))
 
-        # The field this course counts toward most, used to spread picks across fields
+        # The field this course counts toward most (major fields first), used to spread picks across fields
         fields = [(f['major'], f['field']) for f in row.get('fields') or []]
-        field = max(fields, key=lambda k: shares.get(k, 0.0)) if fields else None
+        field = max(fields, key=lambda k: (not is_school(k[0]), shares.get(k, 0.0))) if fields else None
 
         candidates.append({'row': row, 'credits': credits, 'score': score, 'field': field, 'options': options})
 
@@ -255,8 +276,15 @@ def get_recommendations(session, request):
                         f"Your schedule already has {format_credits(base_credits)} credits, "
                         f"the most recommendations will fill to is {format_credits(request.max_credits)}.")
 
-    rows = course_service.get_recommendation_candidates(
-        session, request.course_taken_list, request.major_list, selected_keys, CANDIDATE_POOL)
+    # Pool in-major and school courses separately so the many school courses can't crowd majors out
+    majors = [m for m in request.major_list if not is_school(m)]
+    schools = [m for m in request.major_list if is_school(m)]
+    rows = []
+    for source, limit in ((majors, MAJOR_POOL), (schools, SCHOOL_POOL)):
+        if source:
+            exclude = selected_keys + [r['code'] + str(r['number']) for r in rows]
+            rows += course_service.get_recommendation_candidates(
+                session, request.course_taken_list, source, request.major_list, exclude, limit)
 
     progress = {}
     for row in course_service.get_field_progress(session, request.course_taken_list, request.major_list):

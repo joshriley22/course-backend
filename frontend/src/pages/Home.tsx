@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { fetchEligibleNextCourses, fetchMajors, fetchCourseInfo, fetchRecommendations } from '../api/courses';
 import { CoursesTakenList } from '../utils/CoursesTakenList';
 import { getUsername } from '../utils/auth';
-import { getProfileState } from '../utils/ProfileStore';
+import { getProfileState, requirementMajorsOf } from '../utils/ProfileStore';
 import { WeeklySchedule } from '../components/WeeklySchedule';
 import { SelectedCoursesStrip } from '../components/SelectedCoursesStrip';
 import { CourseSearchPanel } from '../components/CourseSearchPanel';
@@ -18,7 +18,7 @@ import '../App.css';
 import './Home.css';
 
 function profileMajorsOf(username: string | null): string[] {
-    return username ? getProfileState(username).majors : [];
+    return username ? requirementMajorsOf(getProfileState(username)) : [];
 }
 
 export function Home() {
@@ -100,7 +100,7 @@ export function Home() {
     const handleGenerate = useCallback(() => {
         const majors = profileMajorsOf(getUsername());
         if (majors.length === 0) {
-            setRecommendNotice('Add a major on your Profile to get recommendations.');
+            setRecommendNotice('Add a major or school on your Profile to get recommendations.');
             return;
         }
         setGenerating(true);

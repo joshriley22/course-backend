@@ -119,6 +119,19 @@ class SolveScheduleTests(unittest.TestCase):
         _, credits = solve(rows, {('CS', 'core'): 1.0})
         self.assertGreaterEqual(credits, 13)
 
+    def test_prefers_in_major_courses_over_school_requirements(self):
+        # The school course is better rated and covers more of its requirements, but the major course wins the slot
+        school = 'Arts & Sciences General Requirements'
+        shares = {('CS', 'elective'): 0.2, (school, 'hp'): 0.5, (school, 'writing2'): 0.5}
+        rows = [
+            row('HIST', '1', '3', [session('Mo', '10.00', '10.50')], rating=5, review_count=10,
+                fields=[{'major': school, 'field': 'hp'}, {'major': school, 'field': 'writing2'}]),
+            row('CS', '1', '3', [session('Mo', '10.00', '10.50')], rating=3, review_count=2,
+                fields=[{'major': 'CS', 'field': 'elective'}]),
+        ]
+        picked, _ = solve(rows, shares, min_credits=3, max_credits=3)
+        self.assertEqual(picked, {('CS', '1')})
+
     def test_returns_best_under_minimum_when_infeasible(self):
         rows = [row('A', str(i), '3', [session('MoWeFr', '10.00', '10.50')]) for i in range(3)]
         rows.append(row('B', '1', '3', [session('TuTh', '10.00', '11.15')]))

@@ -10,7 +10,7 @@ import { NodeDetails } from '../components/NodeDetails';
 import type { ReviewSummary } from '../components/NodeDetails';
 import { CoursesTakenList, loadTakenCourses } from '../utils/CoursesTakenList';
 import { getUsername, isLoggedIn } from '../utils/auth';
-import { addMajor, getProfileState, removeMajor } from '../utils/ProfileStore';
+import { addMajor, getProfileState, isSchool, removeMajor, schoolLabel, setSchool } from '../utils/ProfileStore';
 import { courseKeyOf } from '../utils/ScheduleFormatter';
 import { pageTransition } from '../utils/pageTransition';
 import type { CourseDetails, CourseSearchResult, TakenCourse } from '../types';
@@ -35,9 +35,12 @@ function ProfileContent({ username }: { username: string }) {
     const [removeError, setRemoveError] = useState<string | null>(null);
 
     const [selectedMajors, setSelectedMajors] = useState<string[]>(() => getProfileState(username).majors);
+    const [selectedSchool, setSelectedSchool] = useState<string | null>(() => getProfileState(username).school);
     const [majorOptions, setMajorOptions] = useState<string[]>([]);
+    const [schoolOptions, setSchoolOptions] = useState<string[]>([]);
     const [optionsStatus, setOptionsStatus] = useState<MajorOptionsStatus>('loading');
     const [addMajorOpen, setAddMajorOpen] = useState(false);
+    const [schoolPickerOpen, setSchoolPickerOpen] = useState(false);
 
     const [nodeInfo, setNodeInfo] = useState<CourseDetails | null>(null);
     const [detailMode, setDetailMode] = useState(false);
@@ -60,7 +63,8 @@ function ProfileContent({ username }: { username: string }) {
         fetchMajors()
             .then((list) => {
                 if (cancelled) return;
-                setMajorOptions(list);
+                setMajorOptions(list.filter((m) => !isSchool(m)));
+                setSchoolOptions(list.filter(isSchool));
                 setOptionsStatus('ready');
             })
             .catch((err) => {
@@ -124,6 +128,10 @@ function ProfileContent({ username }: { username: string }) {
         setSelectedMajors(removeMajor(username, major).majors);
     }, [username]);
 
+    const handleSetSchool = useCallback((school: string | null) => {
+        setSelectedSchool(setSchool(username, school).school);
+    }, [username]);
+
     const coursesMessage = !coursesLoading && (coursesError || courses.length === 0);
 
     return (
@@ -131,6 +139,31 @@ function ProfileContent({ username }: { username: string }) {
             <motion.div id='content-container' className='profile-page main-content flex flex-col full-width full-height' {...pageTransition}>
                 <section className='profile-welcome flex flex-col' aria-labelledby='profile-welcome-title'>
                     <h1 id='profile-welcome-title'>Welcome, {username}!</h1>
+                    <div className='profile-majors flex flex-row items-center justify-between'>
+                        <div className='profile-majors-list flex flex-row items-center'>
+                            <span className='profile-majors-label'>My school:</span>
+                            <button type='button' className='profile-link-btn' onClick={() => setSchoolPickerOpen(true)}>
+                                {selectedSchool ? 'Change school' : 'Select school'}
+                            </button>
+                            {selectedSchool == null ? (
+                                <span className='profile-majors-empty'>None</span>
+                            ) : (
+                                <ul className='profile-major-chips flex flex-row'>
+                                    <li className='profile-major-chip flex flex-row items-center'>
+                                        <span>{schoolLabel(selectedSchool)}</span>
+                                        <button
+                                            type='button'
+                                            className='profile-major-remove'
+                                            onClick={() => handleSetSchool(null)}
+                                            aria-label={`Remove ${schoolLabel(selectedSchool)}`}
+                                        >
+                                            <RemoveIcon />
+                                        </button>
+                                    </li>
+                                </ul>
+                            )}
+                        </div>
+                    </div>
                     <div className='profile-majors flex flex-row items-center justify-between'>
                         <div className='profile-majors-list flex flex-row items-center'>
                             <span className='profile-majors-label'>My majors:</span>
@@ -217,6 +250,23 @@ function ProfileContent({ username }: { username: string }) {
                         selected={selectedMajors}
                         onAdd={handleAddMajor}
                         onClose={() => setAddMajorOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
+            <AnimatePresence>
+                {schoolPickerOpen && (
+                    <MajorPicker
+                        key='school-picker'
+                        options={schoolOptions}
+                        status={optionsStatus}
+                        selected={selectedSchool ? [selectedSchool] : []}
+                        onAdd={handleSetSchool}
+                        onClose={() => setSchoolPickerOpen(false)}
+                        title='Select your school'
+                        noun='schools'
+                        actionLabel='Select'
+                        doneLabel='Selected'
+                        labelOf={schoolLabel}
                     />
                 )}
             </AnimatePresence>

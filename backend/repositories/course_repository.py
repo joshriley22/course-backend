@@ -277,10 +277,11 @@ class CourseRepository:
 
         return [record.data() for record in result]
 
-    def get_recommendation_candidates(self, session, course_taken_list, major_list, exclude_keys, limit):
+    def get_recommendation_candidates(self, session, course_taken_list, source_list, major_list, exclude_keys, limit):
+        # Candidates come from the majors in source_list; their fields cover every major in major_list
         query = """
         MATCH (major:Major)-[:COURSE_OF]->(candidate:Course)
-        WHERE major.name IN $major_list
+        WHERE major.name IN $source_list
           AND NOT candidate.uuid IN $course_taken_list
           AND NOT (candidate.code + toString(candidate.number)) IN $exclude_keys
           AND NOT EXISTS {
@@ -311,8 +312,8 @@ class CourseRepository:
         LIMIT $limit
         """
 
-        result = session.run(query, course_taken_list=course_taken_list, major_list=major_list,
-                             exclude_keys=exclude_keys, limit=limit)
+        result = session.run(query, course_taken_list=course_taken_list, source_list=source_list,
+                             major_list=major_list, exclude_keys=exclude_keys, limit=limit)
 
         return [record.data() for record in result]
 

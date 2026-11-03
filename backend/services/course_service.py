@@ -98,9 +98,10 @@ class CourseService:
 
         return self.repo.get_eligible_next_courses(session, course_taken_list, elective_list, major_list)
 
-    def get_recommendation_candidates(self, session, course_taken_list, major_list, exclude_keys, limit):
+    def get_recommendation_candidates(self, session, course_taken_list, source_list, major_list, exclude_keys, limit):
 
-        return self.repo.get_recommendation_candidates(session, course_taken_list, major_list, exclude_keys, limit)
+        return self.repo.get_recommendation_candidates(
+            session, course_taken_list, source_list, major_list, exclude_keys, limit)
 
     def get_field_progress(self, session, course_taken_list, major_list):
 
