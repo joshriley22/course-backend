@@ -70,7 +70,8 @@ export function SessionPicker({ course, onChoose, onClose }: SessionPickerProps)
     const [lecture, setLecture] = useState<EligibleCourseSession | null>(lectures.length === 1 ? lectures[0] : null);
     const [lab, setLab] = useState<EligibleCourseSession | null>(labs.length === 1 ? labs[0] : null);
 
-    const ready = (lectures.length === 0 || lecture != null) && (labs.length === 0 || lab != null);
+    const offered = lectures.length > 0 || labs.length > 0;
+    const ready = offered && (lectures.length === 0 || lecture != null) && (labs.length === 0 || lab != null);
 
     return (
         <MotionConfig transition={{ ease: 'easeOut', duration: 0.22 }}>
@@ -103,6 +104,9 @@ export function SessionPicker({ course, onChoose, onClose }: SessionPickerProps)
                     </div>
 
                     <div className='picker-results session-picker-results flex flex-col'>
+                        {!offered && (
+                            <p className='session-picker-subtitle'>This course has no sessions offered this term.</p>
+                        )}
                         {lectures.length > 0 && (
                             <SessionGroup
                                 title='Lecture'

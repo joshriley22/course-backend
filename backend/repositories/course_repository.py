@@ -208,10 +208,8 @@ class CourseRepository:
     def get_course_edges(self, session, major_name, field):
         query = """
             MATCH (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c:Course)
-            WHERE EXISTS { (:Class)-[:SESSION_OF]->(c) }
             OPTIONAL MATCH (c:Course)-[:PREREQUISITE]->(c1:Course)
             WHERE c1.number <> c.number AND (:Major {name:$major_name})-[:COURSE_OF {relationship:$field}]->(c1)
-              AND EXISTS { (:Class)-[:SESSION_OF]->(c1) }
             RETURN c.code AS source_code, c.number AS source_number, c.name AS source_name, c.rating AS source_rating,
                    c1.code AS target_code, c1.number AS target_number, c1.name AS target_name, c1.rating AS target_rating
             """
@@ -369,10 +367,10 @@ class CourseRepository:
         MATCH (course:Course {code:$code, number:$number})
         WITH course ORDER BY coalesce(toFloat(course.credits), 0) DESC LIMIT 1
         OPTIONAL MATCH (c:Class)-[:SESSION_OF]->(course)
-        WITH course, collect(DISTINCT {
+        WITH course, collect(DISTINCT CASE WHEN c IS NOT NULL THEN {
             days: c.days, start_time: c.start_time, end_time: c.end_time,
             is_lab: coalesce(c.is_lab, false)
-        }) AS sessions
+        } END) AS sessions
         RETURN course.code AS code, course.number AS number, course.name AS name,
                course.rating AS rating, course.credits AS credits, sessions,
                size([(course)-[:REVIEW]-(:Review) | 1]) AS review_count
