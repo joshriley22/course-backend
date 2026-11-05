@@ -115,6 +115,38 @@ class CourseRepository:
 
         return [record.data() for record in result]
 
+    def search_schedule_courses(self, session, tokens, compact, limit):
+        # Same matching as search_courses, but only courses with classes, shaped like eligible courses
+        # (sessions + review count) so the results can go straight onto the schedule.
+        query = """
+        MATCH (c:Course)
+        WHERE EXISTS { MATCH (:Class)-[:SESSION_OF]->(c) }
+        WITH c, toLower(c.code) AS code_lower,
+             split(toLower(c.code + ' ' + toString(c.number) + ' ' + coalesce(c.name, '')), ' ') AS words,
+             toLower(c.code + toString(c.number)) AS code_number
+        WHERE ALL(token IN $tokens WHERE ANY(word IN words WHERE word STARTS WITH token))
+           OR code_number STARTS WITH $compact
+        WITH c, code_lower ORDER BY coalesce(toFloat(c.credits), 0) DESC
+        WITH code_lower, c.code AS code, c.number AS number, head(collect(c)) AS course
+        ORDER BY (code_lower = $first_token) DESC, (code_lower STARTS WITH $first_token) DESC, code, number
+        LIMIT $limit
+        OPTIONAL MATCH (session:Class)-[:SESSION_OF]->(course)
+        WITH code_lower, code, number, course, collect(DISTINCT {
+                 days: session.days, start_time: session.start_time, end_time: session.end_time,
+                 is_lab: coalesce(session.is_lab, false),
+                 starts_after_10: CASE WHEN session.start_time > '10.00.00.000000' THEN 1 ELSE 0 END,
+                 ends_before_5: CASE WHEN session.end_time < '17.00.00.000000' THEN 1 ELSE 0 END,
+                 avoids_lunch: CASE WHEN NOT (session.start_time < '14.00.00.000000' AND session.end_time > '12.00.00.000000') THEN 1 ELSE 0 END
+             }) AS sessions
+        RETURN code, number, course.name AS name, course.rating AS rating, course.credits AS credits, sessions,
+               size([(course)-[:REVIEW]-(:Review) | 1]) AS review_count
+        ORDER BY (code_lower = $first_token) DESC, (code_lower STARTS WITH $first_token) DESC, code, number
+        """
+
+        result = session.run(query, tokens=tokens, compact=compact, first_token=tokens[0], limit=limit)
+
+        return [record.data() for record in result]
+
     def get_courses(self, session):
 
         query = """
@@ -244,7 +276,9 @@ class CourseRepository:
               WHERE NOT prereq.uuid IN $course_taken_list
           }
           AND EXISTS { MATCH (:Class)-[:SESSION_OF]->(candidate) }
-        WITH DISTINCT candidate
+        WITH DISTINCT candidate ORDER BY coalesce(toFloat(candidate.credits), 0) DESC
+        // Some courses exist as more than one node (a 0-credit copy); keep one per code + number
+        WITH candidate.code AS dedupe_code, candidate.number AS dedupe_number, head(collect(candidate)) AS candidate
         OPTIONAL MATCH (candidate)-[:PREREQUISITE]->(next:Course)
         WITH candidate, COUNT(DISTINCT next) AS next_count
         OPTIONAL MATCH (:Major)-[e:COURSE_OF]->(candidate)
@@ -289,7 +323,9 @@ class CourseRepository:
               WHERE NOT prereq.uuid IN $course_taken_list
           }
           AND EXISTS { MATCH (:Class)-[:SESSION_OF]->(candidate) }
-        WITH DISTINCT candidate
+        WITH DISTINCT candidate ORDER BY coalesce(toFloat(candidate.credits), 0) DESC
+        // Some courses exist as more than one node (a 0-credit copy); keep one per code + number
+        WITH candidate.code AS dedupe_code, candidate.number AS dedupe_number, head(collect(candidate)) AS candidate
         MATCH (m:Major)-[e:COURSE_OF]->(candidate)
         WHERE m.name IN $major_list
         WITH candidate, collect(DISTINCT {major: m.name, field: e.relationship}) AS fields
@@ -331,6 +367,7 @@ class CourseRepository:
     def get_schedule_course(self, session, code, number):
         query = """
         MATCH (course:Course {code:$code, number:$number})
+        WITH course ORDER BY coalesce(toFloat(course.credits), 0) DESC LIMIT 1
         OPTIONAL MATCH (c:Class)-[:SESSION_OF]->(course)
         WITH course, collect(DISTINCT {
             days: c.days, start_time: c.start_time, end_time: c.end_time,

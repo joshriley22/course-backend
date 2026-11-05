@@ -72,6 +72,35 @@ export async function fetchCourseUuid(code: string, number: string): Promise<str
     return data.uuid;
     }
 
+function toEligibleCourse(c: any): EligibleCourse {
+    const credits = Number(c.credits);
+    return {
+        code: c.code,
+        number: c.number,
+        name: c.name,
+        rating: c.rating,
+        reviewCount: c.review_count ?? 0,
+        credits: Number.isFinite(credits) ? credits : undefined,
+        sessions: (c.sessions ?? []).map((s: any) => ({
+            days: s.days,
+            startTime: s.start_time,
+            endTime: s.end_time,
+            isLab: !!s.is_lab,
+            startsAfter10: !!s.starts_after_10,
+            endsBefore5: !!s.ends_before_5,
+            avoidsLunch: !!s.avoids_lunch,
+        })),
+    };
+}
+
+/** Searches every scheduled course in the database by code, number or name. */
+export async function searchScheduleCourses(query: string, signal?: AbortSignal): Promise<EligibleCourse[]> {
+    const res = await fetch(`/courses/schedule-search?q=${encodeURIComponent(query)}`, { signal });
+    if (!res.ok) throw new Error('Failed to search courses');
+    const data = await res.json();
+    return data.map(toEligibleCourse);
+}
+
 export async function fetchEligibleNextCourses(courseTakenList: string[], electiveList: string[], majorList: string[]): Promise<EligibleCourse[]> {
     const res = await fetch('/courses/eligible-next-courses', {
         method: 'POST',
@@ -84,26 +113,7 @@ export async function fetchEligibleNextCourses(courseTakenList: string[], electi
     });
     if (!res.ok) throw new Error('Failed to fetch eligible next courses');
     const data = await res.json();
-    return data.map((c: any): EligibleCourse => {
-        const credits = Number(c.credits);
-        return {
-            code: c.code,
-            number: c.number,
-            name: c.name,
-            rating: c.rating,
-            reviewCount: c.review_count ?? 0,
-            credits: Number.isFinite(credits) ? credits : undefined,
-            sessions: (c.sessions ?? []).map((s: any) => ({
-                days: s.days,
-                startTime: s.start_time,
-                endTime: s.end_time,
-                isLab: !!s.is_lab,
-                startsAfter10: !!s.starts_after_10,
-                endsBefore5: !!s.ends_before_5,
-                avoidsLunch: !!s.avoids_lunch,
-            })),
-        };
-    });
+    return data.map(toEligibleCourse);
 }
 
 interface RecommendationResponse {

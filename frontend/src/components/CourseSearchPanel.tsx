@@ -1,8 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CourseListItem } from './CourseListItem';
-import { CREDIT_CAP } from '../utils/ScheduleFormatter';
+import { searchScheduleCourses } from '../api/courses';
+import { CREDIT_CAP, courseKeyOf } from '../utils/ScheduleFormatter';
 import type { EligibleCourse } from '../types';
 import './CourseSearchPanel.css';
+
+const SEARCH_DEBOUNCE_MS = 250;
+
+interface SearchState {
+    query: string;
+    results: EligibleCourse[];
+    error: string | null;
+}
+
+/** Keeps the first course per code + number so the list never renders duplicate cards. */
+function uniqueByKey(courses: EligibleCourse[]): EligibleCourse[] {
+    const seen = new Set<string>();
+    return courses.filter((course) => {
+        const key = courseKeyOf(course);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
 
 export interface CourseSearchPanelProps {
     courses: EligibleCourse[];
@@ -35,15 +55,37 @@ export function CourseSearchPanel({
     onShowReviews,
 }: CourseSearchPanelProps) {
     const [query, setQuery] = useState('');
+    // The latest backend answer, tagged with the query it answers; it is stale while the user keeps typing.
+    const [search, setSearch] = useState<SearchState | null>(null);
 
+    const trimmedQuery = query.trim();
+
+    // A typed query searches the whole catalog in the database, not just the preloaded suggestions.
+    useEffect(() => {
+        if (!trimmedQuery) return;
+        const controller = new AbortController();
+        const timer = window.setTimeout(() => {
+            searchScheduleCourses(trimmedQuery, controller.signal)
+                .then((results) => setSearch({ query: trimmedQuery, results, error: null }))
+                .catch((err) => {
+                    if (controller.signal.aborted) return;
+                    console.error(err);
+                    setSearch({ query: trimmedQuery, results: [], error: 'Could not search courses. Try again shortly.' });
+                });
+        }, SEARCH_DEBOUNCE_MS);
+        return () => {
+            window.clearTimeout(timer);
+            controller.abort();
+        };
+    }, [trimmedQuery]);
+
+    const searchSettled = search != null && search.query === trimmedQuery;
     const visibleCourses = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return courses;
-        return courses.filter((course) => {
-            const stack = `${course.code} ${course.number} ${course.name}`.toLowerCase();
-            return stack.includes(q);
-        });
-    }, [courses, query]);
+        if (!trimmedQuery) return uniqueByKey(courses);
+        return searchSettled ? uniqueByKey(search.results) : [];
+    }, [courses, search, searchSettled, trimmedQuery]);
+    const shownError = trimmedQuery ? (searchSettled ? search.error : null) : error;
+    const shownLoading = trimmedQuery ? !searchSettled : loading;
 
     return (
         <div className='course-search-panel flex flex-col'>
@@ -61,25 +103,26 @@ export function CourseSearchPanel({
             </div>
 
             <div className='course-search-panel-scroll flex flex-col'>
-                {error && <div className='course-search-panel-error'>{error}</div>}
-                {!error && loading && (
+                {shownError && <div className='course-search-panel-error'>{shownError}</div>}
+                {!shownError && shownLoading && (
                     <>
                         {Array.from({ length: 5 }, (_, i) => (
                             <div key={i} className='course-list-item-skeleton' />
                         ))}
                     </>
                 )}
-                {!error && !loading && visibleCourses.length === 0 && (
+                {!shownError && !shownLoading && visibleCourses.length === 0 && (
                     <div className='course-search-panel-empty'>
-                        No courses match your search
+                        {trimmedQuery ? 'No courses match your search' : 'No suggested courses yet'}
                     </div>
                 )}
-                {!error && !loading && visibleCourses.map((course) => {
-                    const isSelected = selectedKeys.has(`${course.code}${course.number}`);
+                {!shownError && !shownLoading && visibleCourses.map((course) => {
+                    const key = courseKeyOf(course);
+                    const isSelected = selectedKeys.has(key);
                     const disabledByCap = !isSelected && totalCredits + (course.credits ?? 0) > CREDIT_CAP;
                     return (
                         <CourseListItem
-                            key={`${course.code}${course.number}`}
+                            key={key}
                             course={course}
                             isSelected={isSelected}
                             disabledByCap={disabledByCap}

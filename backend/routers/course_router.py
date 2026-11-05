@@ -45,6 +45,15 @@ def search_courses(q: str = "", limit: int = 25):
         return service.search_courses(session, q, limit)
 
 
+@router.get("/courses/schedule-search")
+def search_schedule_courses(q: str = "", limit: int = 30):
+
+    limit = max(1, min(limit, 50))
+
+    with db.get_session() as session:
+        return service.search_schedule_courses(session, q, limit)
+
+
 @router.post("/courses/eligible-next-courses")
 def get_eligible_next_courses(request: EligibleNextCoursesRequest):
 
