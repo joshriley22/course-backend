@@ -3,10 +3,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import '@xyflow/react/dist/style.css';
 import '../App.css';
 
-import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajorNames, fetchFields, fetchScheduleCourse } from '../api/courses';
+import { fetchCodes, fetchCourseEdges, fetchCoPrereqEdges, fetchMajorNames, fetchFields, fetchScheduleCourse, fetchCourseInfo } from '../api/courses';
 import { Header } from '../components/Header';
 import { MajorSearch } from '../components/MajorSearch';
 import { CourseNode } from '../components/CourseNode';
+import type { CourseNodeProps } from '../components/CourseNode';
+import { GraphActions } from '../components/GraphActions';
+import type { GraphActionsValue } from '../components/GraphActions';
 import { CourseEdge, CoPrereqEdge } from '../components/CourseEdge';
 import { NodeDetails } from '../components/NodeDetails';
 import { SessionPicker } from '../components/SessionPicker';
@@ -22,6 +25,9 @@ import { ReactFlow, ReactFlowProvider, useReactFlow, applyNodeChanges, Backgroun
 import './Explore.css';
 
 const edgeTypes = { courseEdge: CourseEdge, coprereqEdge: CoPrereqEdge };
+// Module-level so its identity never changes; a new nodeTypes object makes
+// React Flow remount every node and lose keyboard focus.
+const nodeTypes = { courseNode: CourseNode };
 
 function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNodeDragStart, onNodeDrag, onNodeDragStop, layoutTick }) {
   const { fitView } = useReactFlow();
@@ -49,6 +55,10 @@ function Flow({ nodeProps, edgeProps, nodeTypes, edgeTypes, onNodesChange, onNod
       fitView
       minZoom={0.2}
       maxZoom={1.5}
+      // Keyboard: prerequisite lines aren't actionable, so keep them out of the Tab order,
+      // and don't let Backspace delete courses from the graph.
+      edgesFocusable={false}
+      deleteKeyCode={null}
     >
       <Background variant={BackgroundVariant.Dots} gap={26} size={1.5} color="var(--gray-300)" />
       <Controls showInteractive={false} />
@@ -85,7 +95,14 @@ export function Explore() {
     setSessionChoice(null);
   }, [sessionChoice]);
 
-  const nodeTypes = useMemo(() => ({ courseNode: (props) => <CourseNode {...props} setNodeInfo={setNodeInfo} detailMode={detailMode} setDetailMode={setDetailMode} onAddToSchedule={handleAddToSchedule}/>}), [setNodeInfo, detailMode, setDetailMode, handleAddToSchedule]);
+  const graphActions = useMemo<GraphActionsValue>(() => ({
+    openDetails: (course) => {
+      fetchCourseInfo(course.code, course.number)
+        .then((info) => { setNodeInfo(info); setDetailMode(true); })
+        .catch(() => console.error('Failed to retrieve course info'));
+    },
+    addToSchedule: handleAddToSchedule,
+  }), [handleAddToSchedule]);
 
   const onNodesChange = useCallback((changes) => setNodeProps((nds) => applyNodeChanges(changes, nds)),
     []);
@@ -143,6 +160,21 @@ export function Explore() {
     () => (codes.length >= CODE_FILTER_THRESHOLD ? nodeProps.filter((n) => n.data.code === codes[codeIndex]) : nodeProps),
     [nodeProps, codes, codeIndex],
   );
+  // Tab order follows DOM order, which follows this array: sort top-to-bottom,
+  // then left-to-right so keyboard focus reads the graph in rows. The rank is
+  // taken from the initial layout and only recomputed when the set of nodes
+  // changes; re-sorting on every collision tick would shuffle DOM nodes and
+  // could knock focus off the node the user is on.
+  const nodeIdKey = (visibleNodeProps as CourseNodeProps[]).map((n) => n.id).join('|');
+  const nodeRank = useMemo(() => {
+    const sorted = [...(visibleNodeProps as CourseNodeProps[])].sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
+    return new Map(sorted.map((n, i) => [n.id, i]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeIdKey]);
+  const orderedNodeProps = useMemo(
+    () => [...visibleNodeProps].sort((a, b) => (nodeRank.get(a.id) ?? 0) - (nodeRank.get(b.id) ?? 0)),
+    [visibleNodeProps, nodeRank],
+  );
   const visibleNodeIds = useMemo(() => new Set(visibleNodeProps.map((n) => n.id)), [visibleNodeProps]);
   const visibleEdgeProps = useMemo(
     () => (codes.length >= CODE_FILTER_THRESHOLD ? edgeProps.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)) : edgeProps),
@@ -162,8 +194,9 @@ export function Explore() {
                     <Header codes={codes} currentIndex={codeIndex} onPrev={() => handlePrev(setCodeIndex, codes)} onNext={() => handleNext(setCodeIndex, codes)} tier='code' />
                   )}
                   <ReactFlowProvider>
+                    <GraphActions.Provider value={graphActions}>
                       <Flow
-                        nodeProps={visibleNodeProps}
+                        nodeProps={orderedNodeProps}
                         edgeProps={visibleEdgeProps}
                         nodeTypes={nodeTypes}
                         edgeTypes={edgeTypes}
@@ -173,6 +206,7 @@ export function Explore() {
                         onNodeDragStop={onNodeDragStop}
                         layoutTick={layoutTick}
                       />
+                    </GraphActions.Provider>
                 </ReactFlowProvider>
                   {credits[fieldIndex] != null && (
                     <div className='field-credits' aria-label={`${credits[fieldIndex]} credits needed for this field`}>

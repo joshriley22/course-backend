@@ -79,6 +79,8 @@
 }
 
 .weekly-schedule-grid {
+  /* Containing block for the absolutely positioned blocks, which use their grid area */
+  position: relative;
   display: grid;
   grid-template-columns: 56px repeat(5, minmax(120px, 1fr));
   column-gap: 6px;
