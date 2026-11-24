@@ -7,6 +7,7 @@ import { CourseMiniGraph } from './CourseMiniGraph';
 import { StarPicker } from './StarPicker';
 import { StarRating } from './StarRating';
 import { getUsername, isLoggedIn } from '../utils/auth';
+import { useDialogFocus } from '../utils/useDialogFocus';
 import { formatPrerequisites } from '../utils/PrerequisiteFormatter';
 import type { FieldDetails, CourseDetails, CourseReview } from '../types';
 import './NodeDetails.css';
@@ -52,14 +53,8 @@ export function NodeDetails({ nodeInfo, onClose, focusSection, onReviewPosted }:
     const reviewSectionRef = useRef<HTMLElement | null>(null);
     const postFeedbackRef = useRef<HTMLParagraphElement | null>(null);
     const loggedIn = isLoggedIn();
-
-    useEffect(() => {
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [onClose]);
+    // Native modal <dialog>: browser handles focus, inert background and Escape
+    const dialogRef = useDialogFocus(onClose);
 
     useEffect(() => {
         if (focusSection === 'reviews') {
@@ -123,6 +118,7 @@ export function NodeDetails({ nodeInfo, onClose, focusSection, onReviewPosted }:
         : 'Nothing requires this course directly.';
 
     return (
+        <dialog ref={dialogRef} className='modal-dialog' aria-label={nodeInfo?.name}>
         <MotionConfig transition={{ ease: 'easeOut', duration: 0.22 }}>
             <motion.div
                 className='node-details-backdrop'
@@ -133,9 +129,6 @@ export function NodeDetails({ nodeInfo, onClose, focusSection, onReviewPosted }:
             >
                 <motion.div
                     className='node-details-panel'
-                    role='dialog'
-                    aria-modal='true'
-                    aria-label={nodeInfo?.name}
                     initial={{ opacity: 0, y: 14, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -261,5 +254,6 @@ export function NodeDetails({ nodeInfo, onClose, focusSection, onReviewPosted }:
                 </motion.div>
             </motion.div>
         </MotionConfig>
+        </dialog>
     );
 }

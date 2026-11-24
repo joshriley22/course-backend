@@ -44,25 +44,33 @@ export function SelectedCoursesStrip({ courses, totalCredits, onRemove, onShowDe
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{ duration: 0.18, ease: 'easeOut' }}
-                                onClick={() => onShowDetails(course)}
                             >
+                                {/* The card body is a real button so the keyboard can open details.
+                                    It comes before the remove button: reading left to right, the
+                                    course code starts the row and the × ends it. */}
+                                <button
+                                    type='button'
+                                    className='selected-course-open flex flex-col'
+                                    onClick={() => onShowDetails(course)}
+                                >
+                                    <span className='selected-course-code'>{course.code} {course.number}</span>
+                                    <span className='selected-course-name'>{course.name}</span>
+                                    {course.credits != null && (
+                                        <span className='selected-course-credits'>{course.credits} credit{course.credits === 1 ? '' : 's'}</span>
+                                    )}
+                                    <span className='selected-course-meta flex flex-row items-center justify-between'>
+                                        <StarRating rating={course.rating ?? 0} size={11} />
+                                        <span>{session ? `${formatSessionDays(session.days)} ${formatSessionTime(session.startTime, session.endTime)}` : 'TBD'}</span>
+                                    </span>
+                                </button>
                                 <button
                                     type='button'
                                     className='selected-course-remove'
-                                    onClick={(e) => { e.stopPropagation(); onRemove(course); }}
+                                    onClick={() => onRemove(course)}
                                     aria-label={`Remove ${course.name}`}
                                 >
                                     <RemoveIcon />
                                 </button>
-                                <span className='selected-course-code'>{course.code} {course.number}</span>
-                                <span className='selected-course-name'>{course.name}</span>
-                                {course.credits != null && (
-                                    <span className='selected-course-credits'>{course.credits} credit{course.credits === 1 ? '' : 's'}</span>
-                                )}
-                                <div className='selected-course-meta flex flex-row items-center justify-between'>
-                                    <StarRating rating={course.rating ?? 0} size={11} />
-                                    <span>{session ? `${formatSessionDays(session.days)} ${formatSessionTime(session.startTime, session.endTime)}` : 'TBD'}</span>
-                                </div>
                             </motion.div>
                         );
                     })}

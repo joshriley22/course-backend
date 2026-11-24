@@ -62,18 +62,36 @@
 .selected-course-card {
   position: relative;
   width: 208px;
-  padding: 14px;
   border-radius: 14px;
   background: var(--orange-50);
   outline: 1.5px solid var(--orange-200);
-  gap: 8px;
-  cursor: pointer;
   transition: outline-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .selected-course-card:hover {
   outline-color: var(--orange-400);
   box-shadow: 0 8px 18px rgba(229, 114, 0, 0.18);
+}
+
+/* Fills the card so the whole card stays clickable, as before */
+.selected-course-open {
+  flex: 1;
+  width: 100%;
+  padding: 14px;
+  gap: 8px;
+  border: none;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.selected-course-open:focus-visible {
+  /* Inset so the strip's scroll container doesn't clip the ring */
+  outline: 2px solid var(--blue-600);
+  outline-offset: -2px;
 }
 
 .selected-course-remove {

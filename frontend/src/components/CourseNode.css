@@ -63,12 +63,17 @@
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
+/* overflow: hidden is needed for the open/close height animation, but it would also
+   crop the buttons' focus ring. Padding inside gives the ring room, and the matching
+   negative margin keeps the buttons exactly where they were. */
 .course-node-actions-clip {
   overflow: hidden;
+  margin: -6px;
 }
 
 .course-node-actions {
   gap: 8px;
+  padding: 6px;
 }
 
 .course-node-schedule-btn {

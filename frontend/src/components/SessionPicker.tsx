@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, MotionConfig } from 'framer-motion';
+import { useDialogFocus } from '../utils/useDialogFocus';
 import { formatSessionDays, formatSessionTime } from '../utils/SessionFormatter';
 import { sessionGroups } from '../utils/ScheduleFormatter';
 import type { EligibleCourse, EligibleCourseSession } from '../types';
@@ -57,13 +58,8 @@ function SessionGroup({ title, name, sessions, chosen, onPick }: SessionGroupPro
 }
 
 export function SessionPicker({ course, onChoose, onClose }: SessionPickerProps) {
-    useEffect(() => {
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [onClose]);
+    // Native modal <dialog>: browser handles focus, inert background and Escape
+    const dialogRef = useDialogFocus(onClose);
 
     const { lectures, labs } = sessionGroups(course.sessions);
     // A group with a single option has nothing to choose, so it starts selected.
@@ -74,6 +70,7 @@ export function SessionPicker({ course, onChoose, onClose }: SessionPickerProps)
     const ready = offered && (lectures.length === 0 || lecture != null) && (labs.length === 0 || lab != null);
 
     return (
+        <dialog ref={dialogRef} className='modal-dialog' aria-labelledby='session-picker-title'>
         <MotionConfig transition={{ ease: 'easeOut', duration: 0.22 }}>
             <motion.div
                 className='picker-backdrop'
@@ -84,9 +81,6 @@ export function SessionPicker({ course, onChoose, onClose }: SessionPickerProps)
             >
                 <motion.div
                     className='picker-panel session-picker-panel flex flex-col'
-                    role='dialog'
-                    aria-modal='true'
-                    aria-labelledby='session-picker-title'
                     initial={{ opacity: 0, y: 14, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -141,5 +135,6 @@ export function SessionPicker({ course, onChoose, onClose }: SessionPickerProps)
                 </motion.div>
             </motion.div>
         </MotionConfig>
+        </dialog>
     );
 }

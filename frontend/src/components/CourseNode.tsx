@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { Position, Handle, useReactFlow } from '@xyflow/react';
 import { motion, MotionConfig, AnimatePresence } from 'framer-motion';
-import { addTakenCourse, fetchCourseInfo, fetchCourseUuid } from '../api/courses.ts';
+import { addTakenCourse, fetchCourseUuid } from '../api/courses.ts';
+import { useGraphActions } from './GraphActions';
 import { CoursesTakenList, loadTakenCourses } from '../utils/CoursesTakenList.ts';
 import { getUsername } from '../utils/auth.ts';
 import { useSelectedCourses } from '../utils/SelectedCoursesList.ts';
 import { courseKeyOf } from '../utils/ScheduleFormatter.ts';
 import { StarRating } from './StarRating';
-import type { CourseData, CourseDetails, PrerequisiteRelationship } from '../types';
+import type { CourseData, PrerequisiteRelationship } from '../types';
 import './CourseNode.css';
 
 export class CourseNodeData {
@@ -49,7 +50,13 @@ export class CourseNodeData {
        }
 
    getProps(x : number, y : number ): CourseNodeProps {
-       return {id : this.string(), type : "courseNode", position : {x, y}, data : { code: this.code, number: this.number, name: this.name, rating: this.rating }}
+       return {
+           id : this.string(),
+           type : "courseNode",
+           position : {x, y},
+           ariaLabel: `${this.name}, ${this.code} ${this.number}, rated ${this.rating} out of 5`,
+           data : { code: this.code, number: this.number, name: this.name, rating: this.rating },
+       }
        }
 
 }
@@ -58,37 +65,55 @@ export class CourseNodeData {
         id: string;
         type: string;
         position: { x: number; y: number };
+        ariaLabel?: string;
         data: CourseData;
         style?: CSSProperties;
         measured?: { width?: number; height?: number };
-        setNodeInfo?: (nodeInfo: CourseDetails) => void;
-        detailMode : boolean;
-        setDetailMode : (detailMode: boolean) => void;
-        onAddToSchedule?: (course: CourseData) => void;
     }
 
 
 const HOVER_Z_INDEX = 1000;
-export function CourseNode(
-    { id, data, setNodeInfo, detailMode, setDetailMode, onAddToSchedule }: CourseNodeProps) {
+export function CourseNode({ id, data }: Pick<CourseNodeProps, 'id' | 'data'>) {
     const { code, number, name, rating } = data;
     const ANIMATION_DURATION = 0.2;
+    const actions = useGraphActions();
     const scheduled = useSelectedCourses();
     const isScheduled = scheduled.some((c) => courseKeyOf(c) === courseKeyOf(data));
 
-    const [opened, setOpened] = useState<boolean>(false);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const [hovered, setHovered] = useState<boolean>(false);
+    // True while keyboard focus is on the node itself or on one of its buttons
+    const [focused, setFocused] = useState<boolean>(false);
+    const opened = hovered || focused;
     const [uuid, setUuid] = useState<string | null>(null);
     const [taken, setTaken] = useState<boolean>(false);
     const { updateNode } = useReactFlow();
 
-    const loadCourseInfo = async (code: string, number: string) => {
-        try {
-            const info = await fetchCourseInfo(code, number);
-            setNodeInfo?.(info);
-            } catch(err) {
-                console.error('Failed to retrieve course info');
-                }
-        }
+    // React Flow puts focus on its own .react-flow__node wrapper (our parent), so
+    // listen there; focusin/focusout also cover the action buttons inside the card.
+    useEffect(() => {
+        const nodeEl = cardRef.current?.closest('.react-flow__node');
+        if (!nodeEl) return;
+        const onIn = () => setFocused(true);
+        const onOut = (e: Event) => {
+            const next = (e as FocusEvent).relatedTarget as Node | null;
+            if (!next || !nodeEl.contains(next)) setFocused(false);
+        };
+        nodeEl.addEventListener('focusin', onIn);
+        nodeEl.addEventListener('focusout', onOut);
+        return () => {
+            nodeEl.removeEventListener('focusin', onIn);
+            nodeEl.removeEventListener('focusout', onOut);
+        };
+    }, []);
+
+    // Lift the open card above its neighbours, whether opened by mouse or keyboard
+    useEffect(() => {
+        updateNode(id, (node) => {
+            const { zIndex: _zIndex, ...style } = node.style ?? {};
+            return { style: opened ? { ...style, zIndex: HOVER_Z_INDEX } : style };
+        });
+    }, [opened, id, updateNode]);
 
     // Look up the uuid the first time the card opens so the button can show whether it's already taken
     useEffect(() => {
@@ -123,18 +148,10 @@ export function CourseNode(
         <div className='course-node-wrapper flex flex-col items-center justify-center'>
         <MotionConfig transition={{ ease: 'easeOut', duration: ANIMATION_DURATION }}>
             <motion.div className='course-node-card flex flex-col relative'
+               ref={cardRef}
                animate={{ height: opened ? 262 : 138, scale: opened ? 1.06 : 1 }}
-               onHoverStart={ () => {
-                   setOpened(true);
-                   updateNode(id, (node) => ({ style: { ...node.style, zIndex: HOVER_Z_INDEX } }));
-               } }
-               onHoverEnd={ () => {
-                   setOpened(false);
-                   updateNode(id, (node) => {
-                       const { zIndex: _zIndex, ...style } = node.style ?? {};
-                       return { style };
-                   });
-               }} >
+               onHoverStart={() => setHovered(true)}
+               onHoverEnd={() => setHovered(false)} >
 
 
             <Handle type="target" className='hidden-visibility' position={Position.Top} />
@@ -154,11 +171,11 @@ export function CourseNode(
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ height: { duration: ANIMATION_DURATION }, opacity: { duration: ANIMATION_DURATION + 0.3 } }}>
                 <div className='course-node-actions flex flex-col items-center justify-center'>
-                    <button className='course-node-details-btn nodrag' onClick={ (e) => {e.stopPropagation(); setDetailMode(true); loadCourseInfo(code, number);} }>More Details</button>
+                    <button className='course-node-details-btn nodrag' onClick={ (e) => {e.stopPropagation(); actions?.openDetails(data);} }>More Details</button>
                     <button
                         className='course-node-details-btn course-node-schedule-btn nodrag'
                         disabled={isScheduled}
-                        onClick={ (e) => {e.stopPropagation(); onAddToSchedule?.(data);} }>
+                        onClick={ (e) => {e.stopPropagation(); actions?.addToSchedule(data);} }>
                         {isScheduled ? 'Added' : 'Add to Schedule'}
                     </button>
                     <button
